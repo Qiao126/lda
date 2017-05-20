@@ -8,6 +8,7 @@ from gensim.corpora.wikicorpus import _extract_pages, filter_wiki
 from gensim.parsing.preprocessing import STOPWORDS
 import enchant
 from scipy import stats
+import numpy as np
 
 from stop_words import get_stop_words
 
@@ -125,7 +126,7 @@ def eval_size(model):
     size = []
     num_tokens = len(id2word_wiki.keys())
     for i in range(K):
-        size.append(len(get_topic_terms(i, topn = num_tokens)))
+        size.append(len(model.get_topic_terms(i, topn = num_tokens)))
     size = np.asarray(size)
     score = 1 - np.mean(size / num_tokens)
     print("score: ", score)
@@ -134,7 +135,7 @@ def tuple2list(tl):
     length = len(tl)
     res = np.zeros(length)
     for i in range(length):
-        wordid, value = length[i]
+        wordid, value = tl[i]
         np.put(res, wordid, value)
     return res
     
@@ -146,7 +147,7 @@ def corpus_similarity(model):
 
     for i in range(K):
         probs = [None] * num_tokens
-        topic_distribution = get_topic_terms(i, topn = num_tokens)
+        topic_distribution = model.get_topic_terms(i, topn = num_tokens)
         topic_distribution = tuple2list(topic_distribution)
         
         # calculate the similarity between each topic and the whole corpus
