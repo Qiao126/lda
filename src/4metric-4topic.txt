@@ -1,0 +1,55 @@
+10
+Based on LDA cosine-similarity results:
+average cosine similarity between corresponding parts (higher is better):
+0.916520609928
+average cosine similarity between 10,000 random parts (lower is better):
+0.243010048129
+('score: ', 0.83675528089940765)
+Based on LDA topic-size results:
+('score: ', 0.90000000000000002)
+Based on LDA corpus-similarity results:
+('score: ', 0.8625481457401758)
+Based on LDA within-doc-rank results:
+('score: ', 0.40000000000000002)
+
+50
+Based on LDA cosine-similarity results:
+average cosine similarity between corresponding parts (higher is better):
+0.848066301427
+average cosine similarity between 10,000 random parts (lower is better):
+0.117286323043
+('score: ', 0.86538998919186061)
+Based on LDA topic-size results:
+('score: ', 0.97999999999999998)
+Based on LDA corpus-similarity results:
+('score: ', 0.92993347157712136)
+Based on LDA within-doc-rank results:
+('score: ', 0.40000000000000002)
+
+100
+Based on LDA cosine-similarity results:
+average cosine similarity between corresponding parts (higher is better):
+0.791563179156
+average cosine similarity between 10,000 random parts (lower is better):
+0.0823759787569
+('score: ', 0.85459360019961705)
+Based on LDA topic-size results:
+('score: ', 1.0)
+Based on LDA corpus-similarity results:
+('score: ', 0.94340930300044612)
+Based on LDA within-doc-rank results:
+('score: ', 0.29999999999999999)
+
+500
+Based on LDA cosine-similarity results:
+average cosine similarity between corresponding parts (higher is better):
+0.680481653558
+average cosine similarity between 10,000 random parts (lower is better):
+0.0507504215438
+('score: ', 0.81486561600725538)
+Based on LDA topic-size results:
+('score: ', 0.996)
+Based on LDA corpus-similarity results:
+('score: ', 0.97439138583289586)
+Based on LDA within-doc-rank results:
+('score: ', 0.21285140562248997)

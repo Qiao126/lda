@@ -1,0 +1,66 @@
+Dictionary(82256 unique tokens: [u'schlegel', u'katolikos', u'h\xf8yfjellet', u'naturlover', u'lakeier']...)
+MmCorpus(69378 documents, 82256 features, 14061447 non-zero entries)
+
+10
+Based on LDA cosine-similarity results:
+average cosine similarity between corresponding parts (higher is better):
+0.911767109754
+average cosine similarity between 10,000 random parts (lower is better):
+0.247075632038
+('score: ', 0.83234573885804042)
+Based on LDA topic-size results:
+('score: ', 0.90000000000000002)
+Based on LDA corpus-similarity results:
+('score: ', 0.86760478907624783)
+Based on LDA within-doc-rank results:
+('score: ', 0.5)
+Based on LDA semantic coherence results:
+('score: ', -65.665898610863948)
+
+50
+Based on LDA cosine-similarity results:
+average cosine similarity between corresponding parts (higher is better):
+0.839386683159
+average cosine similarity between 10,000 random parts (lower is better):
+0.14206587416
+('score: ', 0.84866040449938607)
+Based on LDA topic-size results:
+('score: ', 1.0)
+Based on LDA corpus-similarity results:
+('score: ', 0.93024748469159391)
+Based on LDA within-doc-rank results:
+('score: ', 0.34000000000000002)
+Based on LDA semantic coherence results:
+('score: ', -68.506323197582162)
+
+100
+Based on LDA cosine-similarity results:
+average cosine similarity between corresponding parts (higher is better):
+0.817423576654
+average cosine similarity between 10,000 random parts (lower is better):
+0.0951195990268
+('score: ', 0.86115198881339572)
+Based on LDA topic-size results:
+('score: ', 0.97999999999999998)
+Based on LDA corpus-similarity results:
+('score: ', 0.94511645121431453)
+Based on LDA within-doc-rank results:
+('score: ', 0.42999999999999999)
+Based on LDA semantic coherence results:
+('score: ', -72.552171151552841)
+
+500
+Based on LDA cosine-similarity results:
+average cosine similarity between corresponding parts (higher is better):
+0.682351333725
+average cosine similarity between 10,000 random parts (lower is better):
+0.0552501077887
+('score: ', 0.81355061296828279)
+Based on LDA topic-size results:
+('score: ', 0.99399999999999999)
+Based on LDA corpus-similarity results:
+('score: ', 0.97398688543071821)
+Based on LDA within-doc-rank results:
+('score: ', 0.18637274549098196)
+Based on LDA semantic coherence results:
+('score: ', -82.317308540550584)
