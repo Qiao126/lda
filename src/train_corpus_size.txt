@@ -1,0 +1,7 @@
+Wiki:  In total, there are 1523337 unique tokens, from 69378 documents in the corpus. 
+- resulting around 80000 unique tokens
+
+Aftenposten: built Dictionary(523519 unique tokens, from 130823 documents 
+ 
+- discarding 474305 tokens
+- resulting dictionary: Dictionary(49214 unique tokens
