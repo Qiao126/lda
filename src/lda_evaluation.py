@@ -15,53 +15,19 @@ import math
 import collections
 import random
 from stop_words import get_stop_words
-from lda_model_train import model_file
-from lda_model_train import dic_file
 
+from lda_model_train import model_file1
+from lda_model_train import dic_file1
+from lda_model_train import model_file2 
+from lda_model_train import dic_file2
+from lda_model_train import model_file3
+from lda_model_train import dic_file3
+
+from lda_model_train import test_file1
+from lda_model_train import test_file2
+
+from lda_model_train import tokenize
 stoplist = get_stop_words('norwegian')
-
-test_file1 = '../data/nowiki-20170501-pages-articles.xml.bz2'
-test_file2 = '../data/json/aftenposten.2016.json'
-
-
-def tokenize(d, text):
-    a = []
-    for token in simple_preprocess(text):
-        if not d.check(token):
-            if token not in stoplist:
-                a.append(token)
-    return a
-
-
-def iter_wiki(dump_file):
-    """Yield each article from the Wikipedia dump, as a `(title, tokens)` 2-tuple."""
-    ignore_namespaces = 'Wikipedia Category File Portal Template MediaWiki User Help Book Draft'.split()
-    d = enchant.Dict("en_US")
-    for title, text, pageid in _extract_pages(smart_open(dump_file)):
-        text = filter_wiki(text)
-        tokens = tokenize(d, text)
-        if len(tokens) < 200 or any(title.startswith(ns + ':') for ns in ignore_namespaces):
-            continue  # ignore short articles and various meta-articles
-        yield title, tokens
-
-
-def iter_ap(dump_file):
-    """Yield each article from the VG dump, as a `(doc-id, tokens)` 2-tuple."""
-    d = enchant.Dict("en_US")
-    with open(dump_file) as f:
-        i = 0
-        for line in f:
-            i += 1
-            doc = json.loads(line)
-            docid = doc["id"]
-            tokens = []
-            for text in doc["content"]:
-                tokens = tokens + tokenize(d, text)
-            # if len(tokens) < 200:
-            #    i -= 1
-            #    continue  # ignore short articles
-            yield docid, tokens
-        # print ("num_docs: " + str(i))
 
 
 def intra_inter(dictionary, model, test_docs, num_pairs=10000):
@@ -154,12 +120,12 @@ def within_doc_rank(dictionary, model, K, test_docs):
     print("score: ", score)
 
 
-def coherence(dictionary, model, K, valid_docs):
+def coherence(dictionary, model, K, test_docs):
     # build up the term-doc matrix
     td_hash = collections.defaultdict(dict)
     doc_max = {}
     docid = 0
-    for doc in valid_docs:
+    for doc in test_docs:
         bow = dictionary.doc2bow(doc)
 
         max_freq = 0
@@ -203,61 +169,60 @@ def coherence(dictionary, model, K, valid_docs):
     print("score: ", score)
 
 
-logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
-
-id2word_wiki = gensim.corpora.Dictionary().load(dic_file)
-print(id2word_wiki)
-
-# from dictionary to corpus
-
-# wiki_corpus = WikiCorpus('../data/nowiki-latest-pages-articles.xml.bz2', id2word_wiki)
-# gensim.corpora.MmCorpus.serialize('../data/wiki_bow.mm', wiki_corpus)
-mm_corpus = gensim.corpora.MmCorpus('../data/wiki_bow.mm')
-print(mm_corpus)
-
-# clipped_corpus = gensim.utils.ClippedCorpus(mm_corpus, 4000)
-Knum = [10, 50, 100, 500]  # number of topics
-
-for K in Knum:
-    print("topic number: " + str(K) + "---------------------------------------")
-    lda = gensim.models.ldamodel.LdaModel.load(model_file + str(K))
-    lda.print_topics(-1)
-
+def eval(dic_file, model_file):
+    dictionary = gensim.corpora.Dictionary().load(dic_file)
+    print(dictionary)
+    
     # evaluate on 1k wiki documents **not** used in LDA training(wiki)
-    doc_stream1 = (tokens for _, tokens in iter_wiki(test_file1))  # generator
-    test_docs1 = list(itertools.islice(doc_stream1, 8000, 9000))  # test on 1k 20170501-wiki docs
+    with open(test_file1, 'r') as data_file:
+        test_docs_list  = json.load(data_file)['test_doc_list']
+    test_docs1 = test_docs_list  # test on random 1/5 20170501-wiki docs
 
     # evaluate on 1k aftenposten documents **not** used in LDA training(wiki)
-    doc_stream2 = (tokens for _, tokens in iter_ap(test_file2))  # generator
-    test_docs2 = list(itertools.islice(doc_stream2, 8000, 9000))  # test on 1k aftenposten-2016 docs
+    with open(test_file2, 'r') as data_file:
+        test_docs_list  = json.load(data_file)['test_doc_list']
+    test_docs2 = test_docs_list  # test on 1/5 aftenposten docs
+    
+    Knum = [10, 50, 100, 500]  # number of topics
+    for K in Knum:
+        print("Train on: " + str(model_file) + str(K) + "---------------------------------------")
+        lda = gensim.models.ldamodel.LdaModel.load(model_file + str(K))
 
-    print("train-wiki, test-wiki: Based on LDA cosine-similarity results:")
-    intra_inter(id2word_wiki, lda, test_docs1)
-    print("***************************************************************")
+        print("Test on: wiki, cosine-similarity:")
+        intra_inter(dictionary, lda, test_docs1)
+        print("***************************************************************")
 
-    print ("train-wiki, test-wiki: Based on LDA within-doc-rank results:")
-    within_doc_rank(id2word_wiki, lda, K, test_docs1)
-    print("***************************************************************")
+        print ("Test on: wiki, within-doc-rank:")
+        within_doc_rank(dictionary, lda, K, test_docs1)
+        print("***************************************************************")
 
-    print ("train-wiki, test-wiki: Based on LDA semantic coherence results:")
-    coherence(id2word_wiki, lda, K, test_docs1)
-    print("***************************************************************")
+        print ("Test on: wiki,semantic coherence")
+        coherence(dictionary, lda, K, test_docs1)
+        print("***************************************************************")
 
-    print ("train-wiki: Based on LDA topic-size results:")
-    eval_size(id2word_wiki, lda, K)
-    print("***************************************************************")
+        print ("topic-size:")
+        eval_size(dictionary, lda, K)
+        print("***************************************************************")
 
-    print ("train-wiki: Based on LDA corpus-similarity results:")
-    corpus_similarity(id2word_wiki, lda, K)
-    print("***************************************************************")
+        print ("corpus-difference:")
+        corpus_similarity(dictionary, lda, K)
+        print("***************************************************************")
+            
+        print("Test on: af, cosine-similarity results:")
+        intra_inter(dictionary, lda, test_docs2)
+        print("***************************************************************")
 
-    print("train-wiki, test-af: Based on LDA cosine-similarity results:")
-    intra_inter(id2word_wiki, lda, test_docs2)
-    print("***************************************************************")
+        print ("Test on: af: Based on LDA within-doc-rank results:")
+        within_doc_rank(dictionary, lda, K, test_docs2)
+        print("***************************************************************")
 
-    print ("train-wiki, test-af: Based on LDA within-doc-rank results:")
-    within_doc_rank(id2word_wiki, lda, K, test_docs2)
-    print("***************************************************************")
+        print ("Test on: af: Based on LDA semantic coherence results:")
+        coherence(dictionary, lda, K, test_docs2)
 
-    print ("train-wiki, test-af: Based on LDA semantic coherence results:")
-    coherence(id2word_wiki, lda, K, test_docs2)
+    
+if __name__ == '__main__':
+
+    logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
+    eval(dic_file1, model_file1)
+    eval(dic_file2, model_file2)
+    eval(dic_file3, model_file3)

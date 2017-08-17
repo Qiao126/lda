@@ -39,24 +39,6 @@ def iter_ap(test_file):
             #    continue  # ignore short articles 
             yield docid, tokens
         print ("num_docs: " + str(i))
-        
-def intra_inter(dictionary, model, test_docs, num_pairs=10000):
-    # split each test document into two halves and compute topics for each half
-    part1 = [model[dictionary.doc2bow(tokens[: len(tokens) / 2])] for tokens in test_docs]
-    part2 = [model[dictionary.doc2bow(tokens[len(tokens) / 2 :])] for tokens in test_docs]
-    
-    # print computed similarities (uses cossim)
-    print("average cosine similarity between corresponding parts (higher is better):")
-    rel = np.mean([gensim.matutils.cossim(p1, p2) for p1, p2 in zip(part1, part2)])
-    print(rel)
-
-    random_pairs = np.random.randint(0, len(test_docs), size=(num_pairs, 2))
-    print("average cosine similarity between 10,000 random parts (lower is better):")    
-    irel = np.mean([gensim.matutils.cossim(part1[i[0]], part2[i[1]]) for i in random_pairs])
-    print(irel)
-    
-    score = rel*0.5 + (1-irel)*0.5
-    print("score: ", score)
     
             
 logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)

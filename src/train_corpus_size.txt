@@ -1,7 +1,39 @@
 Wiki:  In total, there are 1523337 unique tokens, from 69378 documents in the corpus. 
-- resulting around 80000 unique tokens
+- resulting around 82256 unique tokens
 
-Aftenposten: built Dictionary(523519 unique tokens, from 130823 documents 
- 
-- discarding 474305 tokens
-- resulting dictionary: Dictionary(49214 unique tokens
+model train: unknown
+evaluation: wiki & aftenposten 110m
+
+69378 documents, 82256 features
+
+
+Aftenposten: 
+- built Dictionary(497132 unique tokens, from 113960 documents 
+- resulting dictionary: Dictionary(46046 unique tokens:
+
+total 142451 documents *（80%） -> 113960 documents
+
+113960 documents, 46046 features
+
+model train: 78m
+evaluation: wiki & aftenposten 
+
+
+Merged
+2017-07-08 14:08:26,071 : INFO : loaded corpus index from ../data/wiki_bow.mm.index
+2017-07-08 14:08:26,072 : INFO : initializing corpus reader from ../data/wiki_bow.mm
+2017-07-08 14:08:26,077 : INFO : accepted corpus with 69378 documents, 82256 features, 14061447 non-zero entries
+2017-07-08 14:08:26,113 : INFO : loaded corpus index from ../data/ap_bow.mm.index
+2017-07-08 14:08:26,116 : INFO : initializing corpus reader from ../data/ap_bow.mm
+2017-07-08 14:08:26,116 : INFO : accepted corpus with 113960 documents, 46046 features, 10939464 non-zero entries
+
+183338 documents, 93824 features
+
+
+model train: 
+evaluation: 
+
+
+MmCorpus(55502 documents, 69530 features, 11060342 non-zero entries)
+MmCorpus(113960 documents, 45976 features, 10932030 non-zero entries)
+MmCorpus(169462 documents, 82965 features, 21992372 non-zero entries)

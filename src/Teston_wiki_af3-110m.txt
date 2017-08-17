@@ -1,18 +1,18 @@
 Dictionary(82256 unique tokens: [u'schlegel', u'katolikos', u'h\xf8yfjellet', u'naturlover', u'lakeier']...)
-MmCorpus(69378 documents, 82256 features, 14061447 non-zero entries)
+Train on wiki:
 
 topic number: 10---------------------------------------
-train-wiki, test-wiki: Based on LDA cosine-similarity results:
+test-wiki: Based on LDA cosine-similarity results:
 average cosine similarity between corresponding parts (higher is better):
 0.911767109754
 average cosine similarity between 10,000 random parts (lower is better):
 0.242300918494
 ('score: ', 0.83473309562970499)
 ***************************************************************
-train-wiki, test-wiki: Based on LDA within-doc-rank results:
+test-wiki: Based on LDA within-doc-rank results:
 ('score: ', 0.5)
 ***************************************************************
-train-wiki, test-wiki: Based on LDA semantic coherence results:
+test-wiki: Based on LDA semantic coherence results:
 ('score: ', -65.665898610863948)
 ***************************************************************
 train-wiki: Based on LDA topic-size results:
@@ -21,31 +21,31 @@ train-wiki: Based on LDA topic-size results:
 train-wiki: Based on LDA corpus-similarity results:
 ('score: ', 0.86760478907624783)
 ***************************************************************
-train-wiki, test-af: Based on LDA cosine-similarity results:
+test-af: Based on LDA cosine-similarity results:
 average cosine similarity between corresponding parts (higher is better):
 0.854477870554
 average cosine similarity between 10,000 random parts (lower is better):
 0.541209446726
 ('score: ', 0.65663421191433258)
 ***************************************************************
-train-wiki, test-af: Based on LDA within-doc-rank results:
+test-af: Based on LDA within-doc-rank results:
 ('score: ', 0.5)
 ***************************************************************
-train-wiki, test-af: Based on LDA semantic coherence results:
+test-af: Based on LDA semantic coherence results:
 ('score: ', -85.481767792048686)
 
 topic number: 50---------------------------------------
-train-wiki, test-wiki: Based on LDA cosine-similarity results:
+test-wiki: Based on LDA cosine-similarity results:
 average cosine similarity between corresponding parts (higher is better):
 0.839386683159
 average cosine similarity between 10,000 random parts (lower is better):
 0.139760151589
 ('score: ', 0.84981326578469341)
 ***************************************************************
-train-wiki, test-wiki: Based on LDA within-doc-rank results:
+test-wiki: Based on LDA within-doc-rank results:
 ('score: ', 0.34000000000000002)
 ***************************************************************
-train-wiki, test-wiki: Based on LDA semantic coherence results:
+test-wiki: Based on LDA semantic coherence results:
 ('score: ', -68.506323197582162)
 ***************************************************************
 train-wiki: Based on LDA topic-size results:
@@ -54,31 +54,31 @@ train-wiki: Based on LDA topic-size results:
 train-wiki: Based on LDA corpus-similarity results:
 ('score: ', 0.93024748469159391)
 ***************************************************************
-train-wiki, test-af: Based on LDA cosine-similarity results:
+test-af: Based on LDA cosine-similarity results:
 average cosine similarity between corresponding parts (higher is better):
 0.80298337453
 average cosine similarity between 10,000 random parts (lower is better):
 0.481344028626
 ('score: ', 0.66081967295212118)
 ***************************************************************
-train-wiki, test-af: Based on LDA within-doc-rank results:
+test-af: Based on LDA within-doc-rank results:
 ('score: ', 0.32000000000000001)
 ***************************************************************
-train-wiki, test-af: Based on LDA semantic coherence results:
+test-af: Based on LDA semantic coherence results:
 ('score: ', -87.961785238316878)
 
 topic number: 100---------------------------------------
-train-wiki, test-wiki: Based on LDA cosine-similarity results:
+test-wiki: Based on LDA cosine-similarity results:
 average cosine similarity between corresponding parts (higher is better):
 0.817423576654
 average cosine similarity between 10,000 random parts (lower is better):
 0.0930204506513
 ('score: ', 0.86220156300114092)
 ***************************************************************
-train-wiki, test-wiki: Based on LDA within-doc-rank results:
+test-wiki: Based on LDA within-doc-rank results:
 ('score: ', 0.42999999999999999)
 ***************************************************************
-train-wiki, test-wiki: Based on LDA semantic coherence results:
+test-wiki: Based on LDA semantic coherence results:
 ('score: ', -72.552171151552841)
 ***************************************************************
 train-wiki: Based on LDA topic-size results:
@@ -87,31 +87,31 @@ train-wiki: Based on LDA topic-size results:
 train-wiki: Based on LDA corpus-similarity results:
 ('score: ', 0.94511645121431453)
 ***************************************************************
-train-wiki, test-af: Based on LDA cosine-similarity results:
+test-af: Based on LDA cosine-similarity results:
 average cosine similarity between corresponding parts (higher is better):
 0.686120781865
 average cosine similarity between 10,000 random parts (lower is better):
 0.298574736636
 ('score: ', 0.69377302261454132)
 ***************************************************************
-train-wiki, test-af: Based on LDA within-doc-rank results:
+test-af: Based on LDA within-doc-rank results:
 ('score: ', 0.46999999999999997)
 ***************************************************************
-train-wiki, test-af: Based on LDA semantic coherence results:
+test-af: Based on LDA semantic coherence results:
 ('score: ', -75.284895698351534)
 
 topic number: 500---------------------------------------
-train-wiki, test-wiki: Based on LDA cosine-similarity results:
+test-wiki: Based on LDA cosine-similarity results:
 average cosine similarity between corresponding parts (higher is better):
 0.682351333725
 average cosine similarity between 10,000 random parts (lower is better):
 0.0584604829212
 ('score: ', 0.81194542540204506)
 ***************************************************************
-train-wiki, test-wiki: Based on LDA within-doc-rank results:
+test-wiki: Based on LDA within-doc-rank results:
 ('score: ', 0.18637274549098196)
 ***************************************************************
-train-wiki, test-wiki: Based on LDA semantic coherence results:
+test-wiki: Based on LDA semantic coherence results:
 ('score: ', -82.317308540550584)
 ***************************************************************
 train-wiki: Based on LDA topic-size results:
@@ -120,15 +120,15 @@ train-wiki: Based on LDA topic-size results:
 train-wiki: Based on LDA corpus-similarity results:
 ('score: ', 0.97398688543071821)
 ***************************************************************
-train-wiki, test-af: Based on LDA cosine-similarity results:
+test-af: Based on LDA cosine-similarity results:
 average cosine similarity between corresponding parts (higher is better):
 0.533804422946
 average cosine similarity between 10,000 random parts (lower is better):
 0.177733628044
 ('score: ', 0.6780353974508756)
 ***************************************************************
-train-wiki, test-af: Based on LDA within-doc-rank results:
+test-af: Based on LDA within-doc-rank results:
 ('score: ', 0.19038076152304609)
 ***************************************************************
-train-wiki, test-af: Based on LDA semantic coherence results:
+test-af: Based on LDA semantic coherence results:
 ('score: ', -70.699217708057745)

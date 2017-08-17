@@ -1,0 +1,11 @@
+coercing to Unicode: need string or buffer, NoneType found
+coercing to Unicode: need string or buffer, NoneType found
+coercing to Unicode: need string or buffer, NoneType found
+coercing to Unicode: need string or buffer, NoneType found
+142451
+Dictionary(46046 unique tokens: [u'nordisk', u'driftsutgifter', u'h\xf8yfjellet', u'holstad', u'devaluering']...)
+MmCorpus(113960 documents, 46046 features, 10939464 non-zero entries)
+10
+50
+100
+500
