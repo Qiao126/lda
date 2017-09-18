@@ -38,16 +38,15 @@ def intra_inter(dictionary, model, test_docs, num_pairs=10000):
     # print computed similarities (uses cossim)
     print("average cosine similarity between corresponding parts (higher is better):")
     rel = np.mean([gensim.matutils.cossim(p1, p2) for p1, p2 in zip(part1, part2)])
-    print(rel)
+    print("{:.4f}".format(rel))
 
     random_pairs = np.random.randint(0, len(test_docs), size=(num_pairs, 2))
     print("average cosine similarity between 10,000 random parts (lower is better):")
     irel = np.mean([gensim.matutils.cossim(part1[i[0]], part2[i[1]]) for i in random_pairs])
-    print(irel)
+    print("{:.4f}".format(irel))
 
-    score = rel*0.5 + (1-irel)*0.5
-    print("score: ", score)
-
+    
+    # instead of random parts similarity, calculate the similarity of every two topics, the lower, the less topics are overlapping.
 
 def eval_size(dictionary, model, K):
     size = []
@@ -61,10 +60,10 @@ def eval_size(dictionary, model, K):
     size = np.asarray(size)
     mask = [int(x > float(num_tokens)/K) for x in size]  # good topics, the bigger size is, the better
     score = np.mean(mask)  # percentage of good topics
-    print("score: ", score)
+    print("{:.4f}".format(score))
 
 
-def corpus_similarity(dictionary, model, K):
+def corpus_difference(dictionary, model, K):
     # divergence = []
     sim = []
     copy = []
@@ -85,7 +84,7 @@ def corpus_similarity(dictionary, model, K):
         sim.append(cossim)
 
     score = 1 - np.mean(sim)   # smaller similarity, the better
-    print("score: ", score)
+    print("{:.4f}".format(score))
 
 
 def within_doc_rank(dictionary, model, K, test_docs):
@@ -117,7 +116,7 @@ def within_doc_rank(dictionary, model, K, test_docs):
         scores.append(representitive)
     mask = [int(x > 1.0/K) for x in scores]  # percentage of good topics, the more predominant topic in less docs, the better
     score = np.mean(mask)
-    print("score: ", score)
+    print("{:.4f}".format(score))
 
 
 def coherence(dictionary, model, K, test_docs):
@@ -166,28 +165,28 @@ def coherence(dictionary, model, K, test_docs):
         # print(str(i) + " cohenrence: " + str(coherence))
         coherences.append(coherence)
     score = np.mean(coherences)
-    print("score: ", score)
+    print("{:.4f}".format(score))
 
 
 def eval(dic_file, model_file):
     dictionary = gensim.corpora.Dictionary().load(dic_file)
     print(dictionary)
-    
+    """
     # evaluate on 1k wiki documents **not** used in LDA training(wiki)
     with open(test_file1, 'r') as data_file:
         test_docs_list  = json.load(data_file)['test_doc_list']
     test_docs1 = test_docs_list  # test on random 1/5 20170501-wiki docs
-
+    """
     # evaluate on 1k aftenposten documents **not** used in LDA training(wiki)
     with open(test_file2, 'r') as data_file:
         test_docs_list  = json.load(data_file)['test_doc_list']
     test_docs2 = test_docs_list  # test on 1/5 aftenposten docs
     
-    Knum = [10, 50, 100, 500]  # number of topics
+    Knum = np.arange(10, 500, 40)  # number of topics
     for K in Knum:
         print("Train on: " + str(model_file) + str(K) + "---------------------------------------")
         lda = gensim.models.ldamodel.LdaModel.load(model_file + str(K))
-
+        """
         print("Test on: wiki, cosine-similarity:")
         intra_inter(dictionary, lda, test_docs1)
         print("***************************************************************")
@@ -199,24 +198,25 @@ def eval(dic_file, model_file):
         print ("Test on: wiki,semantic coherence")
         coherence(dictionary, lda, K, test_docs1)
         print("***************************************************************")
-
-        print ("topic-size:")
-        eval_size(dictionary, lda, K)
-        print("***************************************************************")
-
-        print ("corpus-difference:")
-        corpus_similarity(dictionary, lda, K)
-        print("***************************************************************")
-            
-        print("Test on: af, cosine-similarity results:")
+        """
+        
+        #print("Test on: af, cosine-similarity results:")
         intra_inter(dictionary, lda, test_docs2)
-        print("***************************************************************")
+        #print("***************************************************************")
+        
+        #print ("topic-size:")
+        eval_size(dictionary, lda, K)
+        #print("***************************************************************")
 
-        print ("Test on: af: Based on LDA within-doc-rank results:")
+        #print ("corpus-difference:")
+        corpus_difference(dictionary, lda, K)
+        #print("***************************************************************")
+        
+        #print ("Test on: af: Based on LDA within-doc-rank results:")
         within_doc_rank(dictionary, lda, K, test_docs2)
-        print("***************************************************************")
+        #print("***************************************************************")
 
-        print ("Test on: af: Based on LDA semantic coherence results:")
+        #print ("Test on: af: Based on LDA semantic coherence results:")
         coherence(dictionary, lda, K, test_docs2)
 
     

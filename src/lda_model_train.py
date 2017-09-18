@@ -129,7 +129,7 @@ def train():
     train_para(mm_corpus3, id2word_wiki, model_file3)
     
 def train_para(mm_corpus, dictionary, model_file):
-    Knum = [10, 50, 100, 500] # number of topics
+    Knum = np.arange(10, 500, 40) # number of topics
     for K in Knum:
         print ("Train: " + str(model_file) + str(K))
         lda = gensim.models.ldamodel.LdaModel(corpus=mm_corpus, id2word=dictionary, num_topics=K, alpha='auto', eta='auto')
