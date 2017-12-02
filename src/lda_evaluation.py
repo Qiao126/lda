@@ -18,7 +18,7 @@ from stop_words import get_stop_words
 
 from lda_model_train import model_file1
 from lda_model_train import dic_file1
-from lda_model_train import model_file2 
+from lda_model_train import model_file2
 from lda_model_train import dic_file2
 from lda_model_train import model_file3
 from lda_model_train import dic_file3
@@ -36,43 +36,42 @@ def intra_inter(dictionary, model, test_docs, num_pairs=10000):
     part2 = [model[dictionary.doc2bow(tokens[len(tokens) / 2:])] for tokens in test_docs]
 
     # print computed similarities (uses cossim)
-    print("average cosine similarity between corresponding parts (higher is better):")
+    #print("average cosine similarity between corresponding parts (higher is better):")
     rel = np.mean([gensim.matutils.cossim(p1, p2) for p1, p2 in zip(part1, part2)])
     print("{:.4f}".format(rel))
-
+    """
+    num_pairs = len(test_docs)
     random_pairs = np.random.randint(0, len(test_docs), size=(num_pairs, 2))
     print("average cosine similarity between 10,000 random parts (lower is better):")
     irel = np.mean([gensim.matutils.cossim(part1[i[0]], part2[i[1]]) for i in random_pairs])
     print("{:.4f}".format(irel))
+    """
 
-    
     # instead of random parts similarity, calculate the similarity of every two topics, the lower, the less topics are overlapping.
 
-def eval_size(dictionary, model, K):
+def eval_size(dictionary, corpus_dist, model, K):
     size = []
-    num_tokens = len(dictionary.keys())
-    for i in range(K):
-        tuples = model.get_topic_terms(i, topn=num_tokens)
-        prob = np.asarray([j[1] for j in tuples])
-        prob = prob[prob > (1.0/num_tokens)]
-        size.append(len(prob))   # number of tokens for each topic
 
-    size = np.asarray(size)
-    mask = [int(x > float(num_tokens)/K) for x in size]  # good topics, the bigger size is, the better
-    score = np.mean(mask)  # percentage of good topics
+    for i in range(K):
+        count = 0
+        for (wid, prob) in model.get_topic_terms(i): # topn=10
+            count += corpus_dist[wid]
+        size.append(count)   # number of tokens for each topic
+
+    score = np.mean(size)
     print("{:.4f}".format(score))
 
 
-def corpus_difference(dictionary, model, K):
-    # divergence = []
+def corpus_difference(dictionary, corpus_dist, model, K):
     sim = []
     copy = []
     num_tokens = len(dictionary.keys())
-    corpus_distribution = dictionary.doc2bow(dictionary.values())  # return a list of (word_id, word_frequency) 2-tuples.
-    freqs = np.asarray([x[1] for x in corpus_distribution])
+    print(num_tokens, len(corpus_dist.keys()))
+
+    freqs = corpus_dist.values()
     sum_tokens = np.sum(freqs)
-    for x in corpus_distribution:
-        tmp = (x[0], x[1]/float(sum_tokens))  # a list of (word_id, word_prob) 2-tuples.
+    for x in corpus_dist:
+        tmp = (x, corpus_dist[x]/float(sum_tokens))  # a list of (word_id, word_prob) 2-tuples.
         copy.append(tmp)
     corpus_distribution = copy
 
@@ -93,7 +92,7 @@ def within_doc_rank(dictionary, model, K, test_docs):
     topic_doc = {}
 
     for tokens in test_docs:
-        topics = model.get_document_topics(dictionary.doc2bow(tokens))  # list of (topic-id, prob)
+        topics = model.get_document_topics(dictionary.doc2bow(tokens), minimum_probability=float(1/K))  # list of (topic-id, prob)
         num_topics = len(topics)
         if num_topics == 0:
             continue
@@ -114,8 +113,7 @@ def within_doc_rank(dictionary, model, K, test_docs):
         representitive = float(top_hash[t] + 1)/(topic_doc[t] + K)   # smoothing
         # print (t, top_hash[t], topic_doc[t], representitive)
         scores.append(representitive)
-    mask = [int(x > 1.0/K) for x in scores]  # percentage of good topics, the more predominant topic in less docs, the better
-    score = np.mean(mask)
+    score = np.mean(scores)
     print("{:.4f}".format(score))
 
 
@@ -168,9 +166,19 @@ def coherence(dictionary, model, K, test_docs):
     print("{:.4f}".format(score))
 
 
-def eval(dic_file, model_file):
+def eval(dic_file, mcorpus_file, model_file):
     dictionary = gensim.corpora.Dictionary().load(dic_file)
     print(dictionary)
+
+    corpus_dist = {}
+    mm_corpus2 = gensim.corpora.MmCorpus(mcorpus_file)
+    for doc in mm_corpus2:
+        for (wid, freq) in doc:
+            if wid in corpus_dist:
+                corpus_dist[wid] += freq
+            else:
+                corpus_dist[wid] = freq
+
     """
     # evaluate on 1k wiki documents **not** used in LDA training(wiki)
     with open(test_file1, 'r') as data_file:
@@ -181,8 +189,9 @@ def eval(dic_file, model_file):
     with open(test_file2, 'r') as data_file:
         test_docs_list  = json.load(data_file)['test_doc_list']
     test_docs2 = test_docs_list  # test on 1/5 aftenposten docs
-    
-    Knum = np.arange(10, 500, 40)  # number of topics
+
+    #Knum = np.arange(10, 500, 40)  # number of topics
+    Knum = [10, 50, 100, 500]
     for K in Knum:
         print("Train on: " + str(model_file) + str(K) + "---------------------------------------")
         lda = gensim.models.ldamodel.LdaModel.load(model_file + str(K))
@@ -199,19 +208,19 @@ def eval(dic_file, model_file):
         coherence(dictionary, lda, K, test_docs1)
         print("***************************************************************")
         """
-        
+
         #print("Test on: af, cosine-similarity results:")
         intra_inter(dictionary, lda, test_docs2)
         #print("***************************************************************")
-        
+
         #print ("topic-size:")
-        eval_size(dictionary, lda, K)
+        eval_size(dictionary, corpus_dist, lda, K)
         #print("***************************************************************")
 
         #print ("corpus-difference:")
-        corpus_difference(dictionary, lda, K)
+        corpus_difference(dictionary, corpus_dist, lda, K)
         #print("***************************************************************")
-        
+
         #print ("Test on: af: Based on LDA within-doc-rank results:")
         within_doc_rank(dictionary, lda, K, test_docs2)
         #print("***************************************************************")
@@ -219,10 +228,10 @@ def eval(dic_file, model_file):
         #print ("Test on: af: Based on LDA semantic coherence results:")
         coherence(dictionary, lda, K, test_docs2)
 
-    
-if __name__ == '__main__':
 
+if __name__ == '__main__':
+    mcorpus_file = '../data/ap_bow.mm'
     logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
-    eval(dic_file1, model_file1)
-    eval(dic_file2, model_file2)
-    eval(dic_file3, model_file3)
+    #eval(dic_file1, model_file1)  #wiki
+    eval(dic_file2, mcorpus_file, model_file2)  #ap
+    #eval(dic_file3, model_file3)  #merged
