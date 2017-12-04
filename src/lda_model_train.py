@@ -23,11 +23,11 @@ train_file1 = '../data/nowiki-latest-pages-articles.xml.bz2'
 test_file1 = 'test_doc_list_wiki.json'
 
 dic_file2 = "lda.ap.dictionary"
-model_file2 = 'lda.ap.model.pretrained.' 
+model_file2 = 'lda.ap.model.pretrained.'
 dump_dir2 = '../data/json/10years/'
 test_file2 = 'test_doc_list_aftenposten.json'
 
-model_file3 = 'lda.merged.model.pretrained.' 
+model_file3 = 'lda.merged.model.pretrained.'
 dic_file3 = "lda.merged.dictionary"
 
 def tokenize(d, text):
@@ -37,7 +37,7 @@ def tokenize(d, text):
             if not d.check(token):
                 if token not in stoplist:
                     a.append(token)
-    except Exception as e: 
+    except Exception as e:
         print(e)
     return a
 
@@ -53,7 +53,7 @@ def iter_wiki(dump_file):
             continue  # ignore short articles and various meta-articles
         yield title, tokens
 
-         
+
 def iter_ap(dump_dir):  # train on several files, different when evaluation
     """Yield each article from the VG dump, as a `(doc-id, tokens)` 2-tuple."""
     d = enchant.Dict("en_US")
@@ -100,7 +100,7 @@ def train():
     id2word_ap = gensim.corpora.Dictionary(train_doc_list2)
     id2word_ap.filter_extremes(no_below=20, no_above=0.1)
     # id2word_ap = gensim.corpora.Dictionary().load(dic_file2)
-    print id2word_ap
+    print(id2word_ap)
     id2word_ap.save(dic_file2)
 
     # from dictionary to corpus
@@ -127,13 +127,13 @@ def train():
     print(mm_corpus3)
 
     train_para(mm_corpus3, id2word_wiki, model_file3)
-    
+
 def train_para(mm_corpus, dictionary, model_file):
     Knum = np.arange(10, 500, 40) # number of topics
     for K in Knum:
         print ("Train: " + str(model_file) + str(K))
         lda = gensim.models.ldamodel.LdaModel(corpus=mm_corpus, id2word=dictionary, num_topics=K, alpha='auto', eta='auto')
         lda.save(model_file + str(K))
-        
+
 if __name__ == '__main__':
     train()
