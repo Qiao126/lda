@@ -66,7 +66,7 @@ def corpus_difference(dictionary, corpus_dist, model, K):
     sim = []
     copy = []
     num_tokens = len(dictionary.keys())
-    print(num_tokens, len(corpus_dist.keys()))
+    #print(num_tokens, len(corpus_dist.keys()))
 
     freqs = corpus_dist.values()
     sum_tokens = np.sum(freqs)
@@ -101,7 +101,7 @@ def within_doc_rank(dictionary, model, K, test_docs):
                 topic_doc[tid] = 1
             else:
                 topic_doc[tid] += 1
-        top_topic = topics[0][0]
+        top_topic = topics[0][0]  # order by desc prob, get the largest prob
         if top_topic not in top_hash:
             top_hash[top_topic] = 1
         else:
@@ -230,8 +230,8 @@ def eval(dic_file, mcorpus_file, model_file):
 
 
 if __name__ == '__main__':
-    mcorpus_file = '../data/ap_bow.mm'
+    mcorpus_file = '../data/merged_bow.mm'
     logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
     #eval(dic_file1, model_file1)  #wiki
-    eval(dic_file2, mcorpus_file, model_file2)  #ap
+    eval(dic_file3, mcorpus_file, model_file3)  #ap
     #eval(dic_file3, model_file3)  #merged
