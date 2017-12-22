@@ -15,6 +15,7 @@ import math
 import collections
 import random
 from stop_words import get_stop_words
+from operator import itemgetter
 
 from lda_model_train import model_file1
 from lda_model_train import dic_file1
@@ -29,8 +30,13 @@ from lda_model_train import test_file2
 from lda_model_train import tokenize
 stoplist = get_stop_words('norwegian')
 
+mcorpus_file3 = '../data/merged_bow.mm'
+mcorpus_file2 = '../data/ap_bow.mm'
+mcorpus_file1 = '../data/wiki_bow.mm'
+
 
 def intra_inter(dictionary, model, test_docs, num_pairs=10000):
+    test_docs = test_docs[:num_pairs]
     # split each test document into two halves and compute topics for each half
     part1 = [model[dictionary.doc2bow(tokens[: len(tokens) / 2])] for tokens in test_docs]
     part2 = [model[dictionary.doc2bow(tokens[len(tokens) / 2:])] for tokens in test_docs]
@@ -39,13 +45,13 @@ def intra_inter(dictionary, model, test_docs, num_pairs=10000):
     #print("average cosine similarity between corresponding parts (higher is better):")
     rel = np.mean([gensim.matutils.cossim(p1, p2) for p1, p2 in zip(part1, part2)])
     print("{:.4f}".format(rel))
-    """
+
     num_pairs = len(test_docs)
     random_pairs = np.random.randint(0, len(test_docs), size=(num_pairs, 2))
-    print("average cosine similarity between 10,000 random parts (lower is better):")
+    #print("average cosine similarity between 10,000 random parts (lower is better):")
     irel = np.mean([gensim.matutils.cossim(part1[i[0]], part2[i[1]]) for i in random_pairs])
     print("{:.4f}".format(irel))
-    """
+
 
     # instead of random parts similarity, calculate the similarity of every two topics, the lower, the less topics are overlapping.
 
@@ -94,24 +100,26 @@ def within_doc_rank(dictionary, model, K, test_docs):
     for tokens in test_docs:
         topics = model.get_document_topics(dictionary.doc2bow(tokens), minimum_probability=float(1/K))  # list of (topic-id, prob)
         num_topics = len(topics)
+        topics = sorted(topics, key=itemgetter(1), reverse=True) # order by desc prob
         if num_topics == 0:
             continue
         for tid, _ in topics:  # topic-id
             if tid not in topic_doc:
                 topic_doc[tid] = 1
             else:
-                topic_doc[tid] += 1
-        top_topic = topics[0][0]  # order by desc prob, get the largest prob
+                topic_doc[tid] += 1   # increase the count of doc where it is assigned to
+        top_topic = topics[0][0]  #  get the largest prob
         if top_topic not in top_hash:
             top_hash[top_topic] = 1
         else:
-            top_hash[top_topic] += 1
+            top_hash[top_topic] += 1  # increase the count of doc where it is the top 1
 
     for t in topic_doc.keys():
         if t not in top_hash:
-            top_hash[t] = 0
-        representitive = float(top_hash[t] + 1)/(topic_doc[t] + K)   # smoothing
-        # print (t, top_hash[t], topic_doc[t], representitive)
+            representitive =  0;
+        else:
+            representitive = float(top_hash[t] / topic_doc[t])   # no smoothing
+            print (t, top_hash[t], topic_doc[t], representitive)
         scores.append(representitive)
     score = np.mean(scores)
     print("{:.4f}".format(score))
@@ -144,7 +152,7 @@ def coherence(dictionary, model, K, test_docs):
             td_hash[wordid][docid] = (td_hash[wordid][docid] / float(doc_max[docid]) + 0.5) * math.log(tot_doc / float(num_doc))
     coherences = []
     for i in range(K):
-        top_words = [x[0] for x in model.get_topic_terms(i)]
+        top_words = [x[0] for x in model.get_topic_terms(i)]  #topn=10
         coherence = 0
         for j in range(len(top_words)):
             doc_j = td_hash[top_words[j]].keys()
@@ -191,7 +199,7 @@ def eval(dic_file, mcorpus_file, model_file):
     test_docs2 = test_docs_list  # test on 1/5 aftenposten docs
 
     #Knum = np.arange(10, 500, 40)  # number of topics
-    Knum = [10, 50, 100, 500]
+    Knum = [10]
     for K in Knum:
         print("Train on: " + str(model_file) + str(K) + "---------------------------------------")
         lda = gensim.models.ldamodel.LdaModel.load(model_file + str(K))
@@ -210,15 +218,15 @@ def eval(dic_file, mcorpus_file, model_file):
         """
 
         #print("Test on: af, cosine-similarity results:")
-        intra_inter(dictionary, lda, test_docs2)
+        #intra_inter(dictionary, lda, test_docs2)
         #print("***************************************************************")
 
         #print ("topic-size:")
-        eval_size(dictionary, corpus_dist, lda, K)
+        #eval_size(dictionary, corpus_dist, lda, K)
         #print("***************************************************************")
 
         #print ("corpus-difference:")
-        corpus_difference(dictionary, corpus_dist, lda, K)
+        #corpus_difference(dictionary, corpus_dist, lda, K)
         #print("***************************************************************")
 
         #print ("Test on: af: Based on LDA within-doc-rank results:")
@@ -226,12 +234,13 @@ def eval(dic_file, mcorpus_file, model_file):
         #print("***************************************************************")
 
         #print ("Test on: af: Based on LDA semantic coherence results:")
-        coherence(dictionary, lda, K, test_docs2)
+        #coherence(dictionary, lda, K, test_docs2)
 
 
 if __name__ == '__main__':
-    mcorpus_file = '../data/merged_bow.mm'
+
     logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
-    #eval(dic_file1, model_file1)  #wiki
-    eval(dic_file3, mcorpus_file, model_file3)  #ap
-    #eval(dic_file3, model_file3)  #merged
+
+    eval(dic_file1, mcorpus_file1, model_file1)  #wiki->ap
+    eval(dic_file2, mcorpus_file2, model_file2)  #ap->ap
+    eval(dic_file3, mcorpus_file3, model_file3)  #merged->ap

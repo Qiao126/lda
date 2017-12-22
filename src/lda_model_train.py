@@ -62,11 +62,12 @@ def iter_ap(dump_dir):  # train on several files, different when evaluation
         with open(path) as f:
             for line in f:
                 doc = json.loads(line)
-                docid = doc["id"]
+                doc_id = doc["id"]
+                doc_tag = doc["tags"]
                 tokens = []
                 for text in doc["content"]:  # for each line in each document
                     tokens = tokens + tokenize(d, text)
-                yield docid, tokens
+                yield doc_id, doc_tag, tokens
 
 
 def train():
@@ -89,7 +90,7 @@ def train():
     id2word_wiki.save(dic_file1)
 
     # build dictionary: prepocessing on aftenposten
-    doc_list = list(tokens for _, tokens in iter_ap(dump_dir2))
+    doc_list = list(tokens for _, _, tokens in iter_ap(dump_dir2))
     num_doc = len(doc_list)
     print(num_doc)
     num_train = int(num_doc * 0.8)
