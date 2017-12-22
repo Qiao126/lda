@@ -98,9 +98,11 @@ def within_doc_rank(dictionary, model, K, test_docs):
     topic_doc = {}
 
     for tokens in test_docs:
-        topics = model.get_document_topics(dictionary.doc2bow(tokens), minimum_probability=float(1/K))  # list of (topic-id, prob)
+
+        topics = model.get_document_topics(dictionary.doc2bow(tokens), minimum_probability=1.0/K)  # list of (topic-id, prob)
         num_topics = len(topics)
         topics = sorted(topics, key=itemgetter(1), reverse=True) # order by desc prob
+
         if num_topics == 0:
             continue
         for tid, _ in topics:  # topic-id
@@ -118,8 +120,8 @@ def within_doc_rank(dictionary, model, K, test_docs):
         if t not in top_hash:
             representitive =  0;
         else:
-            representitive = float(top_hash[t] / topic_doc[t])   # no smoothing
-            print (t, top_hash[t], topic_doc[t], representitive)
+            representitive = float(top_hash[t]) / topic_doc[t]   # no smoothing
+
         scores.append(representitive)
     score = np.mean(scores)
     print("{:.4f}".format(score))
@@ -199,7 +201,7 @@ def eval(dic_file, mcorpus_file, model_file):
     test_docs2 = test_docs_list  # test on 1/5 aftenposten docs
 
     #Knum = np.arange(10, 500, 40)  # number of topics
-    Knum = [10]
+    Knum = [10, 50, 100, 500]
     for K in Knum:
         print("Train on: " + str(model_file) + str(K) + "---------------------------------------")
         lda = gensim.models.ldamodel.LdaModel.load(model_file + str(K))
