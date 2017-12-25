@@ -26,6 +26,7 @@ from lda_model_train import dic_file3
 
 from lda_model_train import test_file1
 from lda_model_train import test_file2
+from lda_map import test_file3
 
 from lda_model_train import tokenize
 stoplist = get_stop_words('norwegian')
@@ -179,7 +180,7 @@ def perplexity(dictionary, model, test_docs):
     chunk = []
     for i, doc in enumerate(test_docs):
         chunk.append(dictionary.doc2bow(doc))
-    model.log_perplexity(chunk, total_docs=None)
+    print("{:.4f}".format(model.log_perplexity(chunk, total_docs=None)))
 
 
 def eval(dic_file, mcorpus_file, model_file): # fixed vocalbulary, ap-corpus, and diff models
@@ -187,8 +188,8 @@ def eval(dic_file, mcorpus_file, model_file): # fixed vocalbulary, ap-corpus, an
     print(dictionary)
 
     corpus_dist = {}
-    mm_corpus2 = gensim.corpora.MmCorpus(mcorpus_file)
-    for doc in mm_corpus2:
+    mm_corpus = gensim.corpora.MmCorpus(mcorpus_file)
+    for doc in mm_corpus:
         for (wid, freq) in doc:
             if wid in corpus_dist:
                 corpus_dist[wid] += freq
@@ -206,38 +207,42 @@ def eval(dic_file, mcorpus_file, model_file): # fixed vocalbulary, ap-corpus, an
         test_docs_list  = json.load(data_file)['test_doc_list']
     test_docs2 = test_docs_list  # test on 1/5 aftenposten docs
 
+    # test on the same 1000 aftenposten docs as in MAP
+    with open(test_file3, 'r') as data_file:
+        test_docs_list  = json.load(data_file)['test_doc_list']
+    test_docs3 = test_docs_list
+
     #Knum = np.arange(10, 500, 40)  # number of topics
     Knum = [10, 50, 100, 500]
     for K in Knum:
         print("Train on: " + str(model_file) + str(K) + "---------------------------------------")
         lda = gensim.models.ldamodel.LdaModel.load(model_file + str(K))
 
-
         #print("Test on: af, cosine-similarity results:")
-        #intra_inter(dictionary, lda, test_docs2)
+        intra_inter(dictionary, lda, test_docs3)
         #print("***************************************************************")
 
         #print ("topic-size:")
-        #eval_size(dictionary, corpus_dist, lda, K)
+        eval_size(dictionary, corpus_dist, lda, K)
         #print("***************************************************************")
 
         #print ("corpus-difference:")
-        #corpus_difference(dictionary, corpus_dist, lda, K)
+        corpus_difference(dictionary, corpus_dist, lda, K)
         #print("***************************************************************")
 
         #print ("Test on: af: Based on LDA within-doc-rank results:")
-        #within_doc_rank(dictionary, lda, K, test_docs2)
+        within_doc_rank(dictionary, lda, K, test_docs3)
         #print("***************************************************************")
 
         #print ("Test on: af: Based on LDA semantic coherence results:")
-        #coherence(dictionary, lda, K, test_docs2)
+        coherence(dictionary, lda, K, test_docs3)
 
-        perplexity(dictionary, lda, test_docs2)
+        perplexity(dictionary, lda, test_docs3)
 
 if __name__ == '__main__':
 
     logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
 
-    eval(dic_file1, mcorpus_file2, model_file1)  #wiki->ap
+    eval(dic_file1, mcorpus_file1, model_file1)  #wiki->ap
     eval(dic_file2, mcorpus_file2, model_file2)  #ap->ap
-    eval(dic_file3, mcorpus_file2, model_file3)  #merged->ap
+    eval(dic_file3, mcorpus_file3, model_file3)  #merged->ap

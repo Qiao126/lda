@@ -5,8 +5,10 @@ from lda_model_train import dic_file1, dic_file2, dic_file3
 from operator import itemgetter
 import gensim
 import numpy as np
+import json
 
 test_size = 1000
+test_file3 = '../data/test_doc_list_apTag.json'
 
 
 def precision_at_k(r, k):
@@ -28,34 +30,10 @@ def average_precision(r):
 def mean_average_precision(rs):
     return np.mean([average_precision(r) for r in rs])
 
-
-
-def main():
-    dictionary = gensim.corpora.Dictionary().load(dic_file3)
-    model_file = model_file3
-    dist = {}
-    ids = []
-    tags = []
-    doc_list = []
-    i = 0
-    for did, tag, tokens in iter_ap(dump_dir2):
-        if tag:
-            ids.append(did)
-            tags.append(tag[0])
-            doc_list.append(list(tokens))
-            idstr = str(ids[i])
-            i += 1
-            print(idstr, tag[0])
-            dist[idstr] = (tag[0], list(tokens))
-        if len(doc_list) == test_size:   # size of test set
-            break
-
-    #print(len(ids), len(tags), len(doc_list))
-    #print(ids)
-    print(Counter(tags))
+def map(model_file, dic_file, dist):
+    dictionary = gensim.corpora.Dictionary().load(dic_file)
 
     Knum = [10, 50, 100, 500]
-
     for K in Knum:
         rs = []
         doc_topics = {}
@@ -94,6 +72,51 @@ def main():
             rs.append(r)
         print(mean_average_precision(rs))
 
+
+def main():
+
+    dist = {}
+    ids = []
+    tags = []
+    doc_list = []
+    i = 0
+    for did, tag, tokens in iter_ap(dump_dir2):
+        if tag:
+            ids.append(did)
+            tags.append(tag[0])
+            doc_list.append(list(tokens))
+            idstr = str(did)
+            print(idstr, tag[0])
+            dist[idstr] = (tag[0], list(tokens))
+        if len(doc_list) == test_size:   # size of test set
+            print(i)
+            break
+        i += 1
+
+    #print(len(ids), len(tags), len(doc_list))
+    #print(ids)
+    print(Counter(tags))
+
+    with open(test_file3, 'w') as outfile:
+        json.dump({"test_doc_list" : doc_list}, outfile)
+
+    with open(test_file3, 'r') as data_file:
+        test_docs_list  = json.load(data_file)['test_doc_list']
+    test_docs3 = test_docs_list
+
+    """ Check overlapping between MAP vocalbulary and input vocalbulary """
+    map_vol = gensim.corpora.Dictionary(doc_list).values()
+    vol1 = gensim.corpora.Dictionary().load(dic_file1).values()
+    vol2 = gensim.corpora.Dictionary().load(dic_file2).values()
+    vol3 = gensim.corpora.Dictionary().load(dic_file3).values()
+    print(len(vol1), len(vol2), len(vol3), len(map_vol))
+    print("% from wiki:", len(set(vol1).intersection(map_vol))/float(len(vol1)) )
+    print("% from ap:", len(set(vol2).intersection(map_vol))/float(len(vol2)) )
+    print("% from merged:", len(set(vol2).intersection(map_vol))/float(len(vol3)) )
+
+    map(model_file1, dic_file1, dist)
+    map(model_file2, dic_file2, dist)
+    map(model_file3, dic_file3, dist)
 
 
 if __name__ == '__main__':
