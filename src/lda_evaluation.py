@@ -35,8 +35,8 @@ mcorpus_file2 = '../data/ap_bow.mm'
 mcorpus_file1 = '../data/wiki_bow.mm'
 
 
-def intra_inter(dictionary, model, test_docs, num_pairs=10000):
-    test_docs = test_docs[:num_pairs]
+def intra_inter(dictionary, model, test_docs):
+
     # split each test document into two halves and compute topics for each half
     part1 = [model[dictionary.doc2bow(tokens[: len(tokens) / 2])] for tokens in test_docs]
     part2 = [model[dictionary.doc2bow(tokens[len(tokens) / 2:])] for tokens in test_docs]
@@ -47,13 +47,12 @@ def intra_inter(dictionary, model, test_docs, num_pairs=10000):
     print("{:.4f}".format(rel))
 
     num_pairs = len(test_docs)
-    random_pairs = np.random.randint(0, len(test_docs), size=(num_pairs, 2))
+    random_pairs = np.random.randint(0, len(test_docs), size=(len(test_docs), 2))
     #print("average cosine similarity between 10,000 random parts (lower is better):")
     irel = np.mean([gensim.matutils.cossim(part1[i[0]], part2[i[1]]) for i in random_pairs])
     print("{:.4f}".format(irel))
 
 
-    # instead of random parts similarity, calculate the similarity of every two topics, the lower, the less topics are overlapping.
 
 def eval_size(dictionary, corpus_dist, model, K):
     size = []
@@ -68,7 +67,7 @@ def eval_size(dictionary, corpus_dist, model, K):
     print("{:.4f}".format(score))
 
 
-def corpus_difference(dictionary, corpus_dist, model, K):
+def corpus_difference(dictionary, corpus_dist, model, K): # same as topic size
     sim = []
     copy = []
     num_tokens = len(dictionary.keys())
@@ -176,7 +175,14 @@ def coherence(dictionary, model, K, test_docs):
     print("{:.4f}".format(score))
 
 
-def eval(dic_file, mcorpus_file, model_file):
+def perplexity(dictionary, model, test_docs):
+    chunk = []
+    for i, doc in enumerate(test_docs):
+        chunk.append(dictionary.doc2bow(doc))
+    model.log_perplexity(chunk, total_docs=None)
+
+
+def eval(dic_file, mcorpus_file, model_file): # fixed vocalbulary, ap-corpus, and diff models
     dictionary = gensim.corpora.Dictionary().load(dic_file)
     print(dictionary)
 
@@ -205,19 +211,7 @@ def eval(dic_file, mcorpus_file, model_file):
     for K in Knum:
         print("Train on: " + str(model_file) + str(K) + "---------------------------------------")
         lda = gensim.models.ldamodel.LdaModel.load(model_file + str(K))
-        """
-        print("Test on: wiki, cosine-similarity:")
-        intra_inter(dictionary, lda, test_docs1)
-        print("***************************************************************")
 
-        print ("Test on: wiki, within-doc-rank:")
-        within_doc_rank(dictionary, lda, K, test_docs1)
-        print("***************************************************************")
-
-        print ("Test on: wiki,semantic coherence")
-        coherence(dictionary, lda, K, test_docs1)
-        print("***************************************************************")
-        """
 
         #print("Test on: af, cosine-similarity results:")
         #intra_inter(dictionary, lda, test_docs2)
@@ -232,17 +226,18 @@ def eval(dic_file, mcorpus_file, model_file):
         #print("***************************************************************")
 
         #print ("Test on: af: Based on LDA within-doc-rank results:")
-        within_doc_rank(dictionary, lda, K, test_docs2)
+        #within_doc_rank(dictionary, lda, K, test_docs2)
         #print("***************************************************************")
 
         #print ("Test on: af: Based on LDA semantic coherence results:")
         #coherence(dictionary, lda, K, test_docs2)
 
+        perplexity(dictionary, lda, test_docs2)
 
 if __name__ == '__main__':
 
     logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
 
-    eval(dic_file1, mcorpus_file1, model_file1)  #wiki->ap
+    eval(dic_file1, mcorpus_file2, model_file1)  #wiki->ap
     eval(dic_file2, mcorpus_file2, model_file2)  #ap->ap
-    eval(dic_file3, mcorpus_file3, model_file3)  #merged->ap
+    eval(dic_file3, mcorpus_file2, model_file3)  #merged->ap
