@@ -2,13 +2,14 @@ from lda_model_train import iter_ap, dump_dir2
 from collections import Counter, OrderedDict
 from lda_model_train import model_file1, model_file2, model_file3
 from lda_model_train import dic_file1, dic_file2, dic_file3
+from lda_model_train import test_file3
 from operator import itemgetter
 import gensim
 import numpy as np
 import json
 
 test_size = 1000
-test_file3 = '../data/test_doc_list_apTag.json'
+
 
 
 def precision_at_k(r, k):
@@ -80,7 +81,7 @@ def main():
     tags = []
     doc_list = []
     i = 0
-    for did, tag, tokens in iter_ap(dump_dir2):
+    for did, tag, tokens in iter_ap(dump_dir2, "test"):
         if tag:
             ids.append(did)
             tags.append(tag[0])
@@ -98,11 +99,12 @@ def main():
     print(Counter(tags))
 
     with open(test_file3, 'w') as outfile:
-        json.dump({"test_doc_list" : doc_list}, outfile)
+        json.dump({"test_doc_list" : doc_list,
+                    "test_doc_id" : ids}, outfile)
 
     with open(test_file3, 'r') as data_file:
         test_docs_list  = json.load(data_file)['test_doc_list']
-    test_docs3 = test_docs_list
+    doc_list = test_docs_list
 
     """ Check overlapping between MAP vocalbulary and input vocalbulary """
     map_vol = gensim.corpora.Dictionary(doc_list).values()
@@ -114,9 +116,13 @@ def main():
     print("% from ap:", len(set(vol2).intersection(map_vol))/float(len(vol2)) )
     print("% from merged:", len(set(vol2).intersection(map_vol))/float(len(vol3)) )
 
-    map(model_file1, dic_file1, dist)
-    map(model_file2, dic_file2, dist)
-    map(model_file3, dic_file3, dist)
+    with open("vocalbulary.txt", 'w') as outfile:
+        json.dump({"vocalbulary" : list(set(vol2).intersection(vol1))}, outfile)
+
+
+    #map(model_file1, dic_file1, dist)
+    #map(model_file2, dic_file2, dist)
+    #map(model_file3, dic_file3, dist)
 
 
 if __name__ == '__main__':

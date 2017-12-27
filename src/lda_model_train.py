@@ -13,6 +13,7 @@ import numpy as np
 import os
 import json
 import random
+import re
 
 from stop_words import get_stop_words
 stoplist = get_stop_words('norwegian')
@@ -30,13 +31,23 @@ test_file2 = 'test_doc_list_aftenposten.json'
 model_file3 = 'lda.merged.model.pretrained.'
 dic_file3 = "lda.merged.dictionary"
 
+test_file3 = '../data/test_doc_list_apTag.json'
+
+with open("vocalbulary.txt", 'r') as data_file:
+    vol  = json.load(data_file)['vocalbulary']
+
+#with open(test_file3, 'r') as data_file:
+#    testset  = json.load(data_file)['test_doc_id']
+
+
 def tokenize(d, text):
     a = []
     try:
         for token in simple_preprocess(text):
             if not d.check(token):
                 if token not in stoplist:
-                    a.append(token)
+                    if token in vol:
+                        a.append(token)
     except Exception as e:
         print(e)
     return a
@@ -44,9 +55,13 @@ def tokenize(d, text):
 
 def iter_wiki(dump_file):
     """Yield each article from the Wikipedia dump, as a `(title, tokens)` 2-tuple."""
-    ignore_namespaces = 'Wikipedia Category File Portal Template MediaWiki User Help Book Draft'.split()
+    ignore_namespaces = 'Wikipedia MediaWiki Mal Hjelp Kategori'.split()
     d = enchant.Dict("en_US")
     for title, text, pageid in _extract_pages(smart_open(dump_file)):
+        m = re.search('^(.+?):', title)
+        if m:
+            meta = m.group(1)
+            print (meta)
         text = filter_wiki(text)
         tokens = tokenize(d, text)
         if len(tokens) < 200 or any(title.startswith(ns + ':') for ns in ignore_namespaces):
@@ -54,7 +69,7 @@ def iter_wiki(dump_file):
         yield title, tokens
 
 
-def iter_ap(dump_dir):  # train on several files, different when evaluation
+def iter_ap(dump_dir, mode):  # train on several files, different when evaluation
     """Yield each article from the VG dump, as a `(doc-id, tokens)` 2-tuple."""
     d = enchant.Dict("en_US")
     for dump_file in os.listdir(dump_dir):
@@ -63,11 +78,16 @@ def iter_ap(dump_dir):  # train on several files, different when evaluation
             for line in f:
                 doc = json.loads(line)
                 doc_id = doc["id"]
-                doc_tag = doc["tags"]
-                tokens = []
-                for text in doc["content"]:  # for each line in each document
-                    tokens = tokens + tokenize(d, text)
-                yield doc_id, doc_tag, tokens
+
+                if mode == "test":
+                    doc_tag = doc["tags"]
+                    tokens = []
+                    for text in doc["content"]:  # for each line in each document
+                        tokens = tokens + tokenize(d, text)
+                    yield doc_id, doc_tag, tokens
+                elif mode == "train" and doc_id in testset:
+                    print ("skip test doc:", doc_id)
+                    continue
 
 
 def train():
@@ -90,7 +110,7 @@ def train():
     id2word_wiki.save(dic_file1)
 
     # build dictionary: prepocessing on aftenposten
-    doc_list = list(tokens for _, _, tokens in iter_ap(dump_dir2))
+    doc_list = list(tokens for _, _, tokens in iter_ap(dump_dir2, "train"))
     num_doc = len(doc_list)
     print(num_doc)
     num_train = int(num_doc * 0.8)
@@ -130,7 +150,9 @@ def train():
     train_para(mm_corpus3, id2word_wiki, model_file3)
 
 def train_para(mm_corpus, dictionary, model_file):
-    Knum = np.arange(10, 500, 40) # number of topics
+    #Knum = np.arange(10, 500, 40) # number of topics
+    #Knum = np.arange(10, 160, 10) # number of topics
+    Knum = [10]
     for K in Knum:
         print ("Train: " + str(model_file) + str(K))
         lda = gensim.models.ldamodel.LdaModel(corpus=mm_corpus, id2word=dictionary, num_topics=K, alpha='auto', eta='auto')

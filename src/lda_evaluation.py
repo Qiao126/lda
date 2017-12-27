@@ -17,16 +17,10 @@ import random
 from stop_words import get_stop_words
 from operator import itemgetter
 
-from lda_model_train import model_file1
-from lda_model_train import dic_file1
-from lda_model_train import model_file2
-from lda_model_train import dic_file2
-from lda_model_train import model_file3
-from lda_model_train import dic_file3
+from lda_model_train import model_file1, model_file2, model_file3
+from lda_model_train import dic_file1, dic_file2, dic_file3
+from lda_model_train import test_file1, test_file2, test_file3
 
-from lda_model_train import test_file1
-from lda_model_train import test_file2
-from lda_map import test_file3
 
 from lda_model_train import tokenize
 stoplist = get_stop_words('norwegian')
