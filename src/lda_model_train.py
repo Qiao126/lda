@@ -55,13 +55,13 @@ def tokenize(d, text):
 
 def iter_wiki(dump_file):
     """Yield each article from the Wikipedia dump, as a `(title, tokens)` 2-tuple."""
-    ignore_namespaces = 'Wikipedia MediaWiki Mal Hjelp Kategori'.split()
+    ignore_namespaces = 'Wikipedia MediaWiki Mal Hjelp Kategori Portal Fil Bruker Bok'.split()
     d = enchant.Dict("en_US")
     for title, text, pageid in _extract_pages(smart_open(dump_file)):
-        m = re.search('^(.+?):', title)
-        if m:
-            meta = m.group(1)
-            print (meta)
+        #m = re.search('^(.+?):', title)
+        #if m:
+        #    meta = m.group(1)
+        #    print (meta)
         text = filter_wiki(text)
         tokens = tokenize(d, text)
         if len(tokens) < 200 or any(title.startswith(ns + ':') for ns in ignore_namespaces):
@@ -151,8 +151,8 @@ def train():
 
 def train_para(mm_corpus, dictionary, model_file):
     #Knum = np.arange(10, 500, 40) # number of topics
-    #Knum = np.arange(10, 160, 10) # number of topics
-    Knum = [10]
+    Knum = np.arange(10, 160, 10) # number of topics
+
     for K in Knum:
         print ("Train: " + str(model_file) + str(K))
         lda = gensim.models.ldamodel.LdaModel(corpus=mm_corpus, id2word=dictionary, num_topics=K, alpha='auto', eta='auto')
