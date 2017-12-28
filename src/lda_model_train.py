@@ -79,21 +79,19 @@ def iter_ap(dump_dir, mode):  # train on several files, different when evaluatio
                 doc = json.loads(line)
                 doc_id = doc["id"]
 
-                if mode == "test":
+                if mode == "train" and doc_id in testset:
+                    continue
+                else:
                     doc_tag = doc["tags"]
                     tokens = []
                     for text in doc["content"]:  # for each line in each document
                         tokens = tokens + tokenize(d, text)
                     yield doc_id, doc_tag, tokens
-                
-                elif mode == "train" and doc_id in testset:
-                    print ("skip test doc:", doc_id)
-                    continue
 
 
 def train():
     logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
-
+    """
     # build dictionary: preprocesing on wiki
     # remove articles that are too short(<20 words) and metadata
     doc_list = list(tokens for _, tokens in iter_wiki(train_file1))
@@ -109,7 +107,7 @@ def train():
     id2word_wiki.filter_extremes(no_below=20, no_above=0.1)  # keep_n=100000, keep only the first keep_n most frequent tokens (or keep all if None).
     print (id2word_wiki)
     id2word_wiki.save(dic_file1)
-
+    """
     # build dictionary: prepocessing on aftenposten
     doc_list = list(tokens for _, _, tokens in iter_ap(dump_dir2, "train"))
     num_doc = len(doc_list)
