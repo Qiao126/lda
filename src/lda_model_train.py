@@ -36,8 +36,8 @@ test_file3 = '../data/test_doc_list_apTag.json'
 with open("vocalbulary.txt", 'r') as data_file:
     vol  = json.load(data_file)['vocalbulary']
 
-#with open(test_file3, 'r') as data_file:
-#    testset  = json.load(data_file)['test_doc_id']
+with open(test_file3, 'r') as data_file:
+    testset  = json.load(data_file)['test_doc_id']
 
 
 def tokenize(d, text):
@@ -85,6 +85,7 @@ def iter_ap(dump_dir, mode):  # train on several files, different when evaluatio
                     for text in doc["content"]:  # for each line in each document
                         tokens = tokens + tokenize(d, text)
                     yield doc_id, doc_tag, tokens
+                
                 elif mode == "train" and doc_id in testset:
                     print ("skip test doc:", doc_id)
                     continue
