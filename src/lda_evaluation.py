@@ -51,14 +51,14 @@ def intra_inter(dictionary, model, test_docs):
 
 def eval_size(dictionary, corpus_dist, model, K):
     size = []
-
+    tot = np.sum(corpus_dist.values())
     for i in range(K):
         count = 0
         for (wid, prob) in model.get_topic_terms(i): # topn=10
             count += corpus_dist[wid]
         size.append(count)   # number of tokens for each topic
 
-    score = np.mean(size)
+    score = np.mean(size)/float(tot)
     print("{:.4f}".format(score))
 
 
