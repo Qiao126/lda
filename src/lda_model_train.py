@@ -33,14 +33,12 @@ dic_file3 = "lda.merged.dictionary"
 
 test_file3 = '../data/test_doc_list_apTag.json'
 
-with open("vocalbulary.txt", 'r') as data_file:
-    vol  = json.load(data_file)['vocalbulary']
 
 with open(test_file3, 'r') as data_file:
     testset  = json.load(data_file)['test_doc_id']
 
 
-def tokenize(d, text):
+def tokenize(d, text, vol):
     a = []
     try:
         for token in simple_preprocess(text):
@@ -53,7 +51,7 @@ def tokenize(d, text):
     return a
 
 
-def iter_wiki(dump_file):
+def iter_wiki(dump_file, vol):
     """Yield each article from the Wikipedia dump, as a `(title, tokens)` 2-tuple."""
     ignore_namespaces = 'Wikipedia MediaWiki Mal Hjelp Kategori Portal Fil Bruker Bok'.split()
     d = enchant.Dict("en_US")
@@ -63,13 +61,13 @@ def iter_wiki(dump_file):
         #    meta = m.group(1)
         #    print (meta)
         text = filter_wiki(text)
-        tokens = tokenize(d, text)
+        tokens = tokenize(d, text, vol)
         if len(tokens) < 200 or any(title.startswith(ns + ':') for ns in ignore_namespaces):
             continue  # ignore short articles and various meta-articles
         yield title, tokens
 
 
-def iter_ap(dump_dir, mode):  # train on several files, different when evaluation
+def iter_ap(dump_dir, mode, vol):  # train on several files, different when evaluation
     """Yield each article from the VG dump, as a `(doc-id, tokens)` 2-tuple."""
     d = enchant.Dict("en_US")
     for dump_file in os.listdir(dump_dir):
@@ -85,16 +83,19 @@ def iter_ap(dump_dir, mode):  # train on several files, different when evaluatio
                     doc_tag = doc["tags"]
                     tokens = []
                     for text in doc["content"]:  # for each line in each document
-                        tokens = tokens + tokenize(d, text)
+                        tokens = tokens + tokenize(d, text, vol)
                     yield doc_id, doc_tag, tokens
 
 
 def train():
     logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
-    """
+
     # build dictionary: preprocesing on wiki
     # remove articles that are too short(<20 words) and metadata
-    doc_list = list(tokens for _, tokens in iter_wiki(train_file1))
+    with open("vocalbulary.txt", 'r') as data_file:
+        vol  = json.load(data_file)['vocalbulary']
+
+    doc_list = list(tokens for _, tokens in iter_wiki(train_file1, vol))
     num_doc = len(doc_list)
     print(num_doc)
     num_train = int(num_doc * 0.8)
@@ -107,9 +108,15 @@ def train():
     id2word_wiki.filter_extremes(no_below=20, no_above=0.1)  # keep_n=100000, keep only the first keep_n most frequent tokens (or keep all if None).
     print (id2word_wiki)
     id2word_wiki.save(dic_file1)
-    """
+
+    with open("wiki-vocalbulary.txt", 'w') as outfile:
+        json.dump({"vocalbulary" : id2word_wiki.values()}, outfile)
+
+    with open("wiki-vocalbulary.txt", 'r') as data_file:
+        vol  = json.load(data_file)['vocalbulary']
+
     # build dictionary: prepocessing on aftenposten
-    doc_list = list(tokens for _, _, tokens in iter_ap(dump_dir2, "train"))
+    doc_list = list(tokens for _, _, tokens in iter_ap(dump_dir2, "train", vol))
     num_doc = len(doc_list)
     print(num_doc)
     num_train = int(num_doc * 0.8)
