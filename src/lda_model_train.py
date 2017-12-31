@@ -39,13 +39,13 @@ with open(test_file3, 'r') as data_file:
     testset  = json.load(data_file)['test_doc_id']
 
 
-def tokenize(d, text, vol):
+def tokenize(d, text, vol=None):
     a = []
     try:
         for token in simple_preprocess(text):
             if not d.check(token):
                 if token not in stoplist:
-                    if token in vol:
+                    if vol == None or token in vol:
                         a.append(token)
     except Exception as e:
         print(e)
@@ -95,6 +95,7 @@ def train():
     # remove articles that are too short(<20 words) and metadata
     #with open("vocalbulary.txt", 'r') as data_file:
     #    vol  = json.load(data_file)['vocalbulary']
+    vol = None
 
     doc_list = list(tokens for _, tokens in iter_wiki(train_file1, vol))
     num_doc = len(doc_list)
