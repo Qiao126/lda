@@ -47,6 +47,8 @@ def intra_inter(dictionary, model, test_docs):
     irel = np.mean([gensim.matutils.cossim(part1[i[0]], part2[i[1]]) for i in random_pairs])
     print("{:.4f}".format(irel))
 
+    diff = rel - irel
+    print("{:.4f}".format(diff))
 
 
 def eval_size(dictionary, corpus_dist, model, K):
@@ -207,7 +209,7 @@ def eval(dic_file, mcorpus_file, model_file): # fixed vocalbulary, ap-corpus, an
     test_docs3 = test_docs_list
 
     #Knum = np.arange(10, 500, 40)  # number of topics
-    Knum = [10, 50, 100, 500]
+    Knum = np.arange(10, 160, 10)
     for K in Knum:
         print("Train on: " + str(model_file) + str(K) + "---------------------------------------")
         lda = gensim.models.ldamodel.LdaModel.load(model_file + str(K))
