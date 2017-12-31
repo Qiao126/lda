@@ -43,8 +43,8 @@ def map(model_file, dic_file, dist):
         lda = gensim.models.ldamodel.LdaModel.load(model_file + str(K))
         for did, doc in dist.items():
             topics = lda.get_document_topics(dictionary.doc2bow(doc[1]))  #list of (topic-id, prob)
-            topics = sorted(topics, key=itemgetter(1), reverse=True) # order by desc prob
-            topics = topics[:int(K/5)]
+            #topics = sorted(topics, key=itemgetter(1), reverse=True) # order by desc prob
+            #topics = topics[:int(K/5)]  #get top topics
             doc_topics[did] = topics
         docs = doc_topics.keys()
         #print(docs)
@@ -56,7 +56,7 @@ def map(model_file, dic_file, dist):
             for j in range(i+1, test_size):
                 if docs[j] not in sim_dist:
                     sim_dist[docs[j]] = {}
-                sim = gensim.matutils.cossim(doc_topics[docs[i]], doc_topics[docs[j]])
+                sim = gensim.matutils.cossim(doc_topics[docs[i]], doc_topics[docs[j]]) #match topic-id separately in vec1, vec2 to calculate cosine
                 sim_dist[docs[i]][docs[j]] = sim
                 sim_dist[docs[j]][docs[i]] = sim #save twice
         rs = []
@@ -75,13 +75,15 @@ def map(model_file, dic_file, dist):
 
 
 def main():
+    with open("vocalbulary.txt", 'r') as data_file:
+        vol  = json.load(data_file)['vocalbulary']
 
     dist = {}
     ids = []
     tags = []
     doc_list = []
     i = 0
-    for did, tag, tokens in iter_ap(dump_dir2, "test"):
+    for did, tag, tokens in iter_ap(dump_dir2, "test", vol):
         if tag:
             ids.append(did)
             tags.append(tag[0])
