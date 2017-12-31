@@ -33,6 +33,7 @@ dic_file3 = "lda.merged.dictionary"
 
 test_file3 = '../data/test_doc_list_apTag.json'
 
+SEED = 126
 
 with open(test_file3, 'r') as data_file:
     testset  = json.load(data_file)['test_doc_id']
@@ -92,13 +93,14 @@ def train():
 
     # build dictionary: preprocesing on wiki
     # remove articles that are too short(<20 words) and metadata
-    with open("vocalbulary.txt", 'r') as data_file:
-        vol  = json.load(data_file)['vocalbulary']
+    #with open("vocalbulary.txt", 'r') as data_file:
+    #    vol  = json.load(data_file)['vocalbulary']
 
     doc_list = list(tokens for _, tokens in iter_wiki(train_file1, vol))
     num_doc = len(doc_list)
     print(num_doc)
     num_train = int(num_doc * 0.8)
+    random.seed(SEED)
     random.shuffle(doc_list)
     train_doc_list1 = doc_list[: num_train]
     with open(test_file1, 'w') as outfile:
@@ -108,18 +110,19 @@ def train():
     id2word_wiki.filter_extremes(no_below=20, no_above=0.1)  # keep_n=100000, keep only the first keep_n most frequent tokens (or keep all if None).
     print (id2word_wiki)
     id2word_wiki.save(dic_file1)
-
+    """
     with open("wiki-vocalbulary.txt", 'w') as outfile:
         json.dump({"vocalbulary" : id2word_wiki.values()}, outfile)
 
     with open("wiki-vocalbulary.txt", 'r') as data_file:
         vol  = json.load(data_file)['vocalbulary']
-
+    """
     # build dictionary: prepocessing on aftenposten
     doc_list = list(tokens for _, _, tokens in iter_ap(dump_dir2, "train", vol))
     num_doc = len(doc_list)
     print(num_doc)
     num_train = int(num_doc * 0.8)
+    random.seed(SEED)
     random.shuffle(doc_list)
     train_doc_list2 = doc_list[: num_train]
     with open(test_file2, 'w') as outfile:
@@ -129,7 +132,7 @@ def train():
     # id2word_ap = gensim.corpora.Dictionary().load(dic_file2)
     print(id2word_ap)
     id2word_ap.save(dic_file2)
-
+    """
     # from dictionary to corpus
     wiki_corpus = [id2word_wiki.doc2bow(tokens) for tokens in train_doc_list1]
     gensim.corpora.MmCorpus.serialize('../data/wiki_bow.mm', wiki_corpus)
@@ -154,7 +157,7 @@ def train():
     print(mm_corpus3)
 
     train_para(mm_corpus3, id2word_wiki, model_file3)
-
+    """
 def train_para(mm_corpus, dictionary, model_file):
     #Knum = np.arange(10, 500, 40) # number of topics
     Knum = np.arange(10, 160, 10) # number of topics
