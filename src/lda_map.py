@@ -31,17 +31,16 @@ def average_precision(r):
 def mean_average_precision(rs):
     return np.mean([average_precision(r) for r in rs])
 
-def map(model_file, dic_file, dist):
+def map(model_file, dic_file, test):
     dictionary = gensim.corpora.Dictionary().load(dic_file)
-
-    Knum = [10, 50, 100, 500]
+    Knum = np.arange(10, 160, 10) # number of topics
     for K in Knum:
         rs = []
         doc_topics = {}
         sim_dist = {}
         print("Load model: " + str(model_file) + str(K) + "---------------------------------------\n")
         lda = gensim.models.ldamodel.LdaModel.load(model_file + str(K))
-        for did, doc in dist.items():
+        for did, doc in test.items():
             topics = lda.get_document_topics(dictionary.doc2bow(doc[1]))  #list of (topic-id, prob)
             #topics = sorted(topics, key=itemgetter(1), reverse=True) # order by desc prob
             #topics = topics[:int(K/5)]  #get top topics
@@ -66,7 +65,7 @@ def map(model_file, dic_file, dist):
             rank_dist = OrderedDict(sorted(sim_dist[did].items(), key=itemgetter(1), reverse=True))
             for (key, value) in rank_dist.items():
                 #print(key, value)
-                if dist[did][0] == dist[key][0]: #two docs have the same tag
+                if test[did][0] == test[key][0]: #two docs have the same tag
                     r.append(1)
                 else:
                     r.append(0)
@@ -75,10 +74,11 @@ def map(model_file, dic_file, dist):
 
 
 def main():
-    with open("vocalbulary.txt", 'r') as data_file:
-        vol  = json.load(data_file)['vocalbulary']
+    #with open("vocalbulary.txt", 'r') as data_file:
+    #    vol  = json.load(data_file)['vocalbulary']
+    vol = None
 
-    dist = {}
+    test = {}
     ids = []
     tags = []
     doc_list = []
@@ -90,7 +90,7 @@ def main():
             doc_list.append(list(tokens))
             idstr = str(did)
             print(idstr, tag[0])
-            dist[idstr] = (tag[0], list(tokens))
+            test[idstr] = (tag[0], list(tokens))
         if len(doc_list) == test_size:   # size of test set
             print(i)
             break
@@ -100,31 +100,34 @@ def main():
     #print(ids)
     print(Counter(tags))
 
-    with open(test_file3, 'w') as outfile:
-        json.dump({"test_doc_list" : doc_list,
-                    "test_doc_id" : ids}, outfile)
+    #with open(test_file3, 'w') as outfile:
+    #    json.dump({"test_doc_list" : doc_list,
+    #                "test_doc_id" : ids}, outfile)
 
     with open(test_file3, 'r') as data_file:
         test_docs_list  = json.load(data_file)['test_doc_list']
+    print(len(set(test_docs_list).intersection(doc_list))) # check whether it's the same test set
     doc_list = test_docs_list
 
     """ Check overlapping between MAP vocalbulary and input vocalbulary """
     map_vol = gensim.corpora.Dictionary(doc_list).values()
     vol1 = gensim.corpora.Dictionary().load(dic_file1).values()
     vol2 = gensim.corpora.Dictionary().load(dic_file2).values()
+    #print(len(vol1), len(vol2))
+    #print(len(set(vol1).intersection(vol2)))
     vol3 = gensim.corpora.Dictionary().load(dic_file3).values()
     print(len(vol1), len(vol2), len(vol3), len(map_vol))
     print("% from wiki:", len(set(vol1).intersection(map_vol))/float(len(vol1)) )
     print("% from ap:", len(set(vol2).intersection(map_vol))/float(len(vol2)) )
     print("% from merged:", len(set(vol2).intersection(map_vol))/float(len(vol3)) )
 
-    with open("vocalbulary.txt", 'w') as outfile:
-        json.dump({"vocalbulary" : list(set(vol2).intersection(vol1))}, outfile)
+    #with open("vocalbulary.txt", 'w') as outfile:
+    #    json.dump({"vocalbulary" : list(set(vol2).intersection(vol1))}, outfile)
 
 
-    #map(model_file1, dic_file1, dist)
-    #map(model_file2, dic_file2, dist)
-    #map(model_file3, dic_file3, dist)
+    map(model_file1, dic_file1, test)
+    map(model_file2, dic_file2, test)
+    map(model_file3, dic_file3, test)
 
 
 if __name__ == '__main__':
