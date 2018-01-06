@@ -21,11 +21,13 @@ stoplist = get_stop_words('norwegian')
 dic_file1 = "lda.no.dictionary"
 model_file1 = 'lda.no.model.pretrained.'
 train_file1 = '../data/nowiki-latest-pages-articles.xml.bz2'
+train_wiki_file = 'train_doc_list_wiki.json'
 test_file1 = 'test_doc_list_wiki.json'
 
 dic_file2 = "lda.ap.dictionary"
 model_file2 = 'lda.ap.model.pretrained.'
 dump_dir2 = '../data/json/10years/'
+train_ap_file = 'train_doc_list_aftenposten.json'
 test_file2 = 'test_doc_list_aftenposten.json'
 
 model_file3 = 'lda.merged.model.pretrained.'
@@ -73,6 +75,7 @@ def iter_ap(dump_dir, mode, vol):  # train on several files, different when eval
     d = enchant.Dict("en_US")
     for dump_file in os.listdir(dump_dir):
         path = dump_dir + dump_file
+        print dump_file
         with open(path) as f:
             for line in f:
                 doc = json.loads(line)
@@ -93,9 +96,9 @@ def train():
 
     # build dictionary: preprocesing on wiki
     # remove articles that are too short(<20 words) and metadata
-    #with open("vocalbulary.txt", 'r') as data_file:
-    #    vol  = json.load(data_file)['vocalbulary']
-    vol = None
+    with open("vocalbulary.txt", 'r') as data_file:
+        vol  = json.load(data_file)['vocalbulary']
+    #vol = None
 
     doc_list = list(tokens for _, tokens in iter_wiki(train_file1, vol))
     num_doc = len(doc_list)
@@ -104,20 +107,23 @@ def train():
     random.seed(SEED)
     random.shuffle(doc_list)
     train_doc_list1 = doc_list[: num_train]
+    with open(train_wiki_file, 'w') as outfile:
+        json.dump({"train_doc_list" : train_doc_list1}, outfile)
+    id2word_wiki = gensim.corpora.Dictionary(train_doc_list1)
     with open(test_file1, 'w') as outfile:
         json.dump({"test_doc_list" : doc_list[num_train:]}, outfile)
     id2word_wiki = gensim.corpora.Dictionary(train_doc_list1)
     # remove words occurs in <20 articles and >10% articles, keep 100,000 most frequent words
-    id2word_wiki.filter_extremes(no_below=20, no_above=0.1)  # keep_n=100000, keep only the first keep_n most frequent tokens (or keep all if None).
+    #id2word_wiki.filter_extremes(no_below=20, no_above=0.1)  # keep_n=100000, keep only the first keep_n most frequent tokens (or keep all if None).
     print (id2word_wiki)
     id2word_wiki.save(dic_file1)
-    """
+
     with open("wiki-vocalbulary.txt", 'w') as outfile:
         json.dump({"vocalbulary" : id2word_wiki.values()}, outfile)
 
     with open("wiki-vocalbulary.txt", 'r') as data_file:
         vol  = json.load(data_file)['vocalbulary']
-    """
+
     # build dictionary: prepocessing on aftenposten
     doc_list = list(tokens for _, _, tokens in iter_ap(dump_dir2, "train", vol))
     num_doc = len(doc_list)
@@ -126,14 +132,16 @@ def train():
     random.seed(SEED)
     random.shuffle(doc_list)
     train_doc_list2 = doc_list[: num_train]
+    with open(train_ap_file, 'w') as outfile:
+        json.dump({"train_doc_list" : train_doc_list2}, outfile)
     with open(test_file2, 'w') as outfile:
         json.dump({"test_doc_list" : doc_list[num_train:]}, outfile)
     id2word_ap = gensim.corpora.Dictionary(train_doc_list2)
-    id2word_ap.filter_extremes(no_below=20, no_above=0.1)
+    #id2word_ap.filter_extremes(no_below=20, no_above=0.1)
     # id2word_ap = gensim.corpora.Dictionary().load(dic_file2)
     print(id2word_ap)
     id2word_ap.save(dic_file2)
-    """
+
     # from dictionary to corpus
     wiki_corpus = [id2word_wiki.doc2bow(tokens) for tokens in train_doc_list1]
     gensim.corpora.MmCorpus.serialize('../data/wiki_bow.mm', wiki_corpus)
@@ -158,7 +166,7 @@ def train():
     print(mm_corpus3)
 
     train_para(mm_corpus3, id2word_wiki, model_file3)
-    """
+
 def train_para(mm_corpus, dictionary, model_file):
     #Knum = np.arange(10, 500, 40) # number of topics
     Knum = np.arange(10, 160, 10) # number of topics
