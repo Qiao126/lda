@@ -105,9 +105,9 @@ def main():
     #                "test_doc_id" : ids}, outfile)
 
     with open(test_file3, 'r') as data_file:
-        test_docs_list  = json.load(data_file)['test_doc_list']
-    print(len(set(test_docs_list).intersection(doc_list))) # check whether it's the same test set
-    doc_list = test_docs_list
+        test_doc_id  = json.load(data_file)['test_doc_id']
+    print(len(set(test_doc_id).intersection(ids))) # check whether it's the same test set
+    #doc_list = test_doc_list
 
     """ Check overlapping between MAP vocalbulary and input vocalbulary """
     map_vol = gensim.corpora.Dictionary(doc_list).values()
@@ -117,9 +117,9 @@ def main():
     #print(len(set(vol1).intersection(vol2)))
     vol3 = gensim.corpora.Dictionary().load(dic_file3).values()
     print(len(vol1), len(vol2), len(vol3), len(map_vol))
-    print("% from wiki:", len(set(vol1).intersection(map_vol))/float(len(vol1)) )
-    print("% from ap:", len(set(vol2).intersection(map_vol))/float(len(vol2)) )
-    print("% from merged:", len(set(vol2).intersection(map_vol))/float(len(vol3)) )
+    print("% from wiki:", len(set(vol1).intersection(map_vol)), len(set(vol1).intersection(map_vol))/float(len(vol1)) )
+    print("% from ap:", len(set(vol2).intersection(map_vol)), len(set(vol2).intersection(map_vol))/float(len(vol2)) )
+    print("% from merged:", len(set(vol2).intersection(map_vol)), len(set(vol2).intersection(map_vol))/float(len(vol3)) )
 
     #with open("vocalbulary.txt", 'w') as outfile:
     #    json.dump({"vocalbulary" : list(set(vol2).intersection(vol1))}, outfile)
