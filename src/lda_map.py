@@ -90,15 +90,15 @@ def main():
             tags.append(tag[0])
             test_doc_list.append(list(tokens))
             idstr = str(did)
-            print(idstr, tag[0])
-            test[idstr] = (tag[0], list(tokens))
+            #print(idstr, tag[0])
+            #test[idstr] = (tag[0], list(tokens))
         #if len(test_doc_list) == test_size:   # size of test set
         #    print(i)
         #    break
         i += 1
 
     #print(len(ids), len(tags), len(test_doc_list))
-    #print(Counter(tags))
+    print(Counter(tags))
 
     random.seed(SEED)
     random.shuffle(ids)
@@ -113,17 +113,18 @@ def main():
     print("test_size:", test_size)
 
     with open(test_file3, 'w') as outfile:
-        json.dump({"test" : test,
+        json.dump({"test_doc_tag" : tags,
                     "test_doc_list": test_doc_list,
                     "test_doc_id" : ids}, outfile)
-    """
+
     with open(test_file3, 'r') as data_file:
         data  = json.load(data_file)
-        test = data['test']
-        test_doc_list = data['test_doc_list']
-        test_doc_id = data['test_doc_id']
-    print(len(set(test_doc_id).intersection(ids))) # check whether it's the same test set
-    """
+        test_doc_tag = data['test_doc_tag'][:test_size]
+        test_doc_list = data['test_doc_list'][:test_size]
+        test_doc_id = data['test_doc_id'][:test_size]
+    #print(len(set(test_doc_id).intersection(ids))) # check whether it's the same test set
+    for did, tag, doc in zip(test_doc_id, test_doc_tag, test_doc_list):
+        test[did] = (tag, doc)
 
     """ Check overlapping between MAP vocalbulary and input vocalbulary """
     map_vol = gensim.corpora.Dictionary(test_doc_list).values()
