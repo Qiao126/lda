@@ -7,9 +7,9 @@ from operator import itemgetter
 import gensim
 import numpy as np
 import json
+import random
 
-test_size = 1000
-
+SEED = 126
 
 
 def precision_at_k(r, k):
@@ -32,6 +32,7 @@ def mean_average_precision(rs):
     return np.mean([average_precision(r) for r in rs])
 
 def map(model_file, dic_file, test):
+    test_size = len(test.keys())
     dictionary = gensim.corpora.Dictionary().load(dic_file)
     Knum = np.arange(10, 160, 10) # number of topics
     for K in Knum:
@@ -81,36 +82,51 @@ def main():
     test = {}
     ids = []
     tags = []
-    doc_list = []
+    test_doc_list = []
     i = 0
     for did, tag, tokens in iter_ap(dump_dir2, "test", vol):
         if tag:
             ids.append(did)
             tags.append(tag[0])
-            doc_list.append(list(tokens))
+            test_doc_list.append(list(tokens))
             idstr = str(did)
             print(idstr, tag[0])
             test[idstr] = (tag[0], list(tokens))
-        if len(doc_list) == test_size:   # size of test set
-            print(i)
-            break
+        #if len(test_doc_list) == test_size:   # size of test set
+        #    print(i)
+        #    break
         i += 1
 
-    #print(len(ids), len(tags), len(doc_list))
-    #print(ids)
-    print(Counter(tags))
+    #print(len(ids), len(tags), len(test_doc_list))
+    #print(Counter(tags))
 
-    #with open(test_file3, 'w') as outfile:
-    #    json.dump({"test_doc_list" : doc_list,
-    #                "test_doc_id" : ids}, outfile)
+    random.seed(SEED)
+    random.shuffle(ids)
 
+    random.seed(SEED)
+    random.shuffle(tags)
+
+    random.seed(SEED)
+    random.shuffle(test_doc_list)
+
+    test_size = len(ids) / 10
+    print("test_size:", test_size)
+
+    with open(test_file3, 'w') as outfile:
+        json.dump({"test" : test,
+                    "test_doc_list": test_doc_list,
+                    "test_doc_id" : ids}, outfile)
+    """
     with open(test_file3, 'r') as data_file:
-        test_doc_id  = json.load(data_file)['test_doc_id']
+        data  = json.load(data_file)
+        test = data['test']
+        test_doc_list = data['test_doc_list']
+        test_doc_id = data['test_doc_id']
     print(len(set(test_doc_id).intersection(ids))) # check whether it's the same test set
-    #doc_list = test_doc_list
+    """
 
     """ Check overlapping between MAP vocalbulary and input vocalbulary """
-    map_vol = gensim.corpora.Dictionary(doc_list).values()
+    map_vol = gensim.corpora.Dictionary(test_doc_list).values()
     vol1 = gensim.corpora.Dictionary().load(dic_file1).values()
     vol2 = gensim.corpora.Dictionary().load(dic_file2).values()
     #print(len(vol1), len(vol2))
@@ -125,9 +141,9 @@ def main():
     #    json.dump({"vocalbulary" : list(set(vol2).intersection(vol1))}, outfile)
 
 
-    map(model_file1, dic_file1, test)
-    map(model_file2, dic_file2, test)
-    map(model_file3, dic_file3, test)
+    #map(model_file1, dic_file1, test)
+    #map(model_file2, dic_file2, test)
+    #map(model_file3, dic_file3, test)
 
 
 if __name__ == '__main__':
