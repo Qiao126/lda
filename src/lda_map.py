@@ -114,17 +114,20 @@ def main():
     print("test_size:", test_size)
 
     with open(test_file3, 'w') as outfile:
-        json.dump({"test_doc_tag" : tags,
+        json.dump({"test_size": test_size,
+                    "test_doc_tag" : tags,
                     "test_doc_list": test_doc_list,
                     "test_doc_id" : ids}, outfile)
     """
     with open(test_file3, 'r') as data_file:
         data  = json.load(data_file)
+        test_size = data['test_size']
         test_doc_tag = data['test_doc_tag'][:test_size]
         test_doc_list = data['test_doc_list'][:test_size]
         test_doc_id = data['test_doc_id'][:test_size]
     #print(len(set(test_doc_id).intersection(ids))) # check whether it's the same test set
     print(Counter(test_doc_tag))
+    test = {}
     for did, tag, doc in zip(test_doc_id, test_doc_tag, test_doc_list):
         test[did] = (tag, doc)
 

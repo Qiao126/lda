@@ -174,23 +174,9 @@ def perplexity(dictionary, model, test_docs):
     print("{:.4f}".format(model.log_perplexity(chunk, total_docs=None)))
 
 
-def eval(dic_file, mm_corpus, corpus_dist, corpus_docs, model_file): # fixed vocalbulary, ap-corpus, and diff models
-
-    """
-    # evaluate on 1k wiki documents **not** used in LDA training(wiki)
-    with open(test_file1, 'r') as data_file:
-        test_docs_list  = json.load(data_file)['test_doc_list']
-    test_docs1 = test_docs_list  # test on random 1/5 20170501-wiki docs
-
-    # evaluate on 1k aftenposten documents **not** used in LDA training(wiki)
-    with open(test_file2, 'r') as data_file:
-        test_docs_list  = json.load(data_file)['test_doc_list']
-    test_docs2 = test_docs_list  # test on 1/5 aftenposten docs
-    """
-    # test on the same 1000 aftenposten docs as in MAP
-    with open(test_file3, 'r') as data_file:
-        test_docs_list  = json.load(data_file)['test_doc_list']
-    test_docs3 = test_docs_list
+def eval(dictionary, mm_corpus, corpus_dist, corpus_docs, model_file, test_docs3): # fixed vocalbulary, ap-corpus, and diff models
+    print(dictionary)
+    print(mm_corpus)
 
     #Knum = np.arange(10, 500, 40)  # number of topics
     Knum = np.arange(10, 160, 10)
@@ -198,23 +184,14 @@ def eval(dic_file, mm_corpus, corpus_dist, corpus_docs, model_file): # fixed voc
         print("Train on: " + str(model_file) + str(K) + "---------------------------------------")
         lda = gensim.models.ldamodel.LdaModel.load(model_file + str(K))
 
-        #print("Test on: af, cosine-similarity results:")
         intra_inter(dictionary, lda, test_docs3)
-        #print("***************************************************************")
 
-        #print ("topic-size:")
         eval_size(dictionary, corpus_dist, lda, K)
-        #print("***************************************************************")
 
-        #print ("corpus-difference:")
         corpus_difference(dictionary, corpus_dist, lda, K)
-        #print("***************************************************************")
 
-        #print ("Test on: af: Based on LDA within-doc-rank results:")
         within_doc_rank(dictionary, lda, K, corpus_docs)
-        #print("***************************************************************")
 
-        #print ("Test on: af: Based on LDA semantic coherence results:")
         coherence(dictionary, lda, K, mm_corpus)
 
         perplexity(dictionary, lda, test_docs3)
@@ -233,7 +210,9 @@ if __name__ == '__main__':
     dictionary2 = gensim.corpora.Dictionary().load(dic_file2)
     dictionary3 = gensim.corpora.Dictionary().load(dic_file3)
 
-    corpus_dist = {}
+    corpus_dist1 = {}
+    corpus_dist2 = {}
+    corpus_dist3 = {}
     mm_corpus1 = gensim.corpora.MmCorpus(mcorpus_file1)
     mm_corpus2 = gensim.corpora.MmCorpus(mcorpus_file2)
     mm_corpus3 = gensim.corpora.MmCorpus(mcorpus_file3)
@@ -244,10 +223,26 @@ if __name__ == '__main__':
     for doc in mm_corpus2:
         corpus_dist2.update(dict(doc))
 
-    eval(dictionary1, mm_corpus1, corpus_dist1, wiki_docs, model_file1)  #wiki->wiki(train corpus)
-    eval(dictionary1, mm_corpus2, corpus_dist2, ap_docs, model_file1)  #wiki->ap(test corpus)
+    """
+    # evaluate on 1k wiki documents **not** used in LDA training(wiki)
+    with open(test_file1, 'r') as data_file:
+        test_docs_list  = json.load(data_file)['test_doc_list']
+    test_docs1 = test_docs_list  # test on random 1/5 20170501-wiki docs
 
-    eval(dictionary2, mm_corpus2, corpus_dist2, ap_docs, model_file2)  #ap->ap(train/test corpus)
+    # evaluate on 1k aftenposten documents **not** used in LDA training(wiki)
+    with open(test_file2, 'r') as data_file:
+        test_docs_list  = json.load(data_file)['test_doc_list']
+    test_docs2 = test_docs_list  # test on 1/5 aftenposten docs
+    """
+    # test on the same 1000 aftenposten docs as in MAP
+    with open(test_file3, 'r') as data_file:
+        test_docs_list  = json.load(data_file)['test_doc_list']
+    test_docs3 = test_docs_list
 
-    eval(dictionary3, mm_corpus3, corpus_dist3, merged_docs, model_file3)  #merged->merged(train corpus)
-    eval(dictionary3, mm_corpus2, corpus_dist2, ap_docs, model_file3)  #merged->ap(test corpus)
+    eval(dictionary1, mm_corpus1, corpus_dist1, wiki_docs, model_file1, test_docs3)  #wiki->wiki(train corpus)
+    eval(dictionary1, mm_corpus2, corpus_dist2, ap_docs, model_file1, test_docs3)  #wiki->ap(test corpus)
+
+    eval(dictionary2, mm_corpus2, corpus_dist2, ap_docs, model_file2, test_docs3)  #ap->ap(train/test corpus)
+
+    eval(dictionary3, mm_corpus3, corpus_dist3, merged_docs, model_file3, test_docs3)  #merged->merged(train corpus)
+    eval(dictionary3, mm_corpus2, corpus_dist2, ap_docs, model_file3, test_docs3)  #merged->ap(test corpus)
