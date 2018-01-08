@@ -20,14 +20,10 @@ from operator import itemgetter
 from lda_model_train import model_file1, model_file2, model_file3
 from lda_model_train import dic_file1, dic_file2, dic_file3
 from lda_model_train import test_file1, test_file2, test_file3
-
+from lda_model_train import mcorpus_file3, mcorpus_file2, mcorpus_file1
 
 from lda_model_train import tokenize
 stoplist = get_stop_words('norwegian')
-
-mcorpus_file3 = '../data/merged_bow.mm'
-mcorpus_file2 = '../data/ap_bow.mm'
-mcorpus_file1 = '../data/wiki_bow.mm'
 
 
 def intra_inter(dictionary, model, test_docs):
@@ -88,14 +84,14 @@ def corpus_difference(dictionary, corpus_dist, model, K): # same as topic size
     print("{:.4f}".format(score))
 
 
-def within_doc_rank(dictionary, model, K, test_docs):
+def within_doc_rank(dictionary, model, K, corpus_docs):
     scores = []
     top_hash = {}
     topic_doc = {}
 
-    for tokens in test_docs:
+    for tokens in corpus_docs:
 
-        topics = model.get_document_topics(dictionary.doc2bow(tokens), minimum_probability=1.0/K)  # list of (topic-id, prob)
+        topics = model.get_document_topics(dictionary.doc2bow(tokens))  #, minimum_probability=1.0/K)  # list of (topic-id, prob)
         num_topics = len(topics)
         topics = sorted(topics, key=itemgetter(1), reverse=True) # order by desc prob
 
@@ -123,22 +119,21 @@ def within_doc_rank(dictionary, model, K, test_docs):
     print("{:.4f}".format(score))
 
 
-def coherence(dictionary, model, K, test_docs):
+def coherence(dictionary, model, K, mm_corpus):
     # build up the term-doc matrix
     td_hash = collections.defaultdict(dict)
     doc_max = {}
     docid = 0
-    for doc in test_docs:
-        bow = dictionary.doc2bow(doc)
-
+    for doc in mm_corpus:
+        #bow = dictionary.doc2bow(doc)
         max_freq = 0
-        for x in bow:
+        for (wid, freq) in bow:
             # term-doc frequency
-            td_hash[x[0]][docid] = x[1]
+            td_hash[wid][docid] = freq
 
             # record max word frequency in this doc
-            if x[1] > max_freq:
-                max_freq = x[1]
+            if freq > max_freq:
+                max_freq = freq
         doc_max[docid] = max_freq
         docid += 1
 
@@ -179,30 +174,19 @@ def perplexity(dictionary, model, test_docs):
     print("{:.4f}".format(model.log_perplexity(chunk, total_docs=None)))
 
 
-def eval(dic_file, mcorpus_file, model_file): # fixed vocalbulary, ap-corpus, and diff models
-    dictionary = gensim.corpora.Dictionary().load(dic_file)
-    print(dictionary)
-
-    corpus_dist = {}
-    mm_corpus = gensim.corpora.MmCorpus(mcorpus_file)
-    for doc in mm_corpus:
-        for (wid, freq) in doc:
-            if wid in corpus_dist:
-                corpus_dist[wid] += freq
-            else:
-                corpus_dist[wid] = freq
+def eval(dic_file, mm_corpus, corpus_dist, corpus_docs, model_file): # fixed vocalbulary, ap-corpus, and diff models
 
     """
     # evaluate on 1k wiki documents **not** used in LDA training(wiki)
     with open(test_file1, 'r') as data_file:
         test_docs_list  = json.load(data_file)['test_doc_list']
     test_docs1 = test_docs_list  # test on random 1/5 20170501-wiki docs
-    """
+
     # evaluate on 1k aftenposten documents **not** used in LDA training(wiki)
     with open(test_file2, 'r') as data_file:
         test_docs_list  = json.load(data_file)['test_doc_list']
     test_docs2 = test_docs_list  # test on 1/5 aftenposten docs
-
+    """
     # test on the same 1000 aftenposten docs as in MAP
     with open(test_file3, 'r') as data_file:
         test_docs_list  = json.load(data_file)['test_doc_list']
@@ -227,11 +211,11 @@ def eval(dic_file, mcorpus_file, model_file): # fixed vocalbulary, ap-corpus, an
         #print("***************************************************************")
 
         #print ("Test on: af: Based on LDA within-doc-rank results:")
-        within_doc_rank(dictionary, lda, K, test_docs3)
+        within_doc_rank(dictionary, lda, K, corpus_docs)
         #print("***************************************************************")
 
         #print ("Test on: af: Based on LDA semantic coherence results:")
-        coherence(dictionary, lda, K, test_docs3)
+        coherence(dictionary, lda, K, mm_corpus)
 
         perplexity(dictionary, lda, test_docs3)
 
@@ -239,6 +223,31 @@ if __name__ == '__main__':
 
     logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
 
-    eval(dic_file1, mcorpus_file1, model_file1)  #wiki->ap
-    eval(dic_file2, mcorpus_file2, model_file2)  #ap->ap
-    eval(dic_file3, mcorpus_file3, model_file3)  #merged->ap
+    with open(train_wiki_file, 'r') as data_file:
+        wiki_docs  = json.load(data_file)['train_doc_list']
+    with open(train_ap_file, 'r') as data_file:
+        ap_docs  = json.load(data_file)['train_doc_list']
+    merged_docs = wiki_docs + ap_docs
+
+    dictionary1 = gensim.corpora.Dictionary().load(dic_file1)
+    dictionary2 = gensim.corpora.Dictionary().load(dic_file2)
+    dictionary3 = gensim.corpora.Dictionary().load(dic_file3)
+
+    corpus_dist = {}
+    mm_corpus1 = gensim.corpora.MmCorpus(mcorpus_file1)
+    mm_corpus2 = gensim.corpora.MmCorpus(mcorpus_file2)
+    mm_corpus3 = gensim.corpora.MmCorpus(mcorpus_file3)
+    for doc in mm_corpus1:
+        corpus_dist1.update(dict(doc))
+    for doc in mm_corpus2:
+        corpus_dist2.update(dict(doc))
+    for doc in mm_corpus2:
+        corpus_dist2.update(dict(doc))
+
+    eval(dictionary1, mm_corpus1, corpus_dist1, wiki_docs, model_file1)  #wiki->wiki(train corpus)
+    eval(dictionary1, mm_corpus2, corpus_dist2, ap_docs, model_file1)  #wiki->ap(test corpus)
+
+    eval(dictionary2, mm_corpus2, corpus_dist2, ap_docs, model_file2)  #ap->ap(train/test corpus)
+
+    eval(dictionary3, mm_corpus3, corpus_dist3, merged_docs, model_file3)  #merged->merged(train corpus)
+    eval(dictionary3, mm_corpus2, corpus_dist2, ap_docs, model_file3)  #merged->ap(test corpus)
