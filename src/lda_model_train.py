@@ -18,6 +18,10 @@ import re
 from stop_words import get_stop_words
 stoplist = get_stop_words('norwegian')
 
+mcorpus_file3 = '../data/merged_bow.mm'
+mcorpus_file2 = '../data/ap_bow.mm'
+mcorpus_file1 = '../data/wiki_bow.mm'
+
 dic_file1 = "lda.no.dictionary"
 model_file1 = 'lda.no.model.pretrained.'
 train_file1 = '../data/nowiki-latest-pages-articles.xml.bz2'
