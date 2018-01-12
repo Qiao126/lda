@@ -202,7 +202,7 @@ def eval(dictionary, mm_corpus, corpus_dist, corpus_docs, model_file, test_docs3
 if __name__ == '__main__':
 
     logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
-
+    """
     with open(train_wiki_file, 'r') as data_file:
         wiki_docs  = json.load(data_file)['train_doc_list']
     with open(train_ap_file, 'r') as data_file:
@@ -212,13 +212,16 @@ if __name__ == '__main__':
     dictionary1 = gensim.corpora.Dictionary().load(dic_file1)
     dictionary2 = gensim.corpora.Dictionary().load(dic_file2)
     dictionary3 = gensim.corpora.Dictionary().load(dic_file3)
-
+    """
     corpus_dist1 = {}
     corpus_dist2 = {}
     corpus_dist3 = {}
     mm_corpus1 = gensim.corpora.MmCorpus(mcorpus_file1)
     mm_corpus2 = gensim.corpora.MmCorpus(mcorpus_file2)
     mm_corpus3 = gensim.corpora.MmCorpus(mcorpus_file3)
+    print(mm_corpus1)
+    print(mm_corpus2)
+    print(mm_corpus3)
 
     for doc in mm_corpus1:
         for (wid, freq) in doc:
@@ -231,34 +234,19 @@ if __name__ == '__main__':
         for (wid, freq) in doc:
              if wid in corpus_dist2:
                 corpus_dist2[wid] += freq
-            else:
+             else:
                 corpus_dist2[wid] = freq
 
     for doc in mm_corpus3:
         for (wid, freq) in doc:
              if wid in corpus_dist3:
                 corpus_dist3[wid] += freq
-            else:
+             else:
                 corpus_dist3[wid] = freq
 
     print(len(corpus_dist1.keys()), np.sum(corpus_dist1.values()))
     print(len(corpus_dist2.keys()), np.sum(corpus_dist2.values()))
     print(len(corpus_dist3.keys()), np.sum(corpus_dist3.values()))
-    """
-    # evaluate on 1k wiki documents **not** used in LDA training(wiki)
-    with open(test_file1, 'r') as data_file:
-        test_docs_list  = json.load(data_file)['test_doc_list']
-    test_docs1 = test_docs_list  # test on random 1/5 20170501-wiki docs
-
-    # evaluate on 1k aftenposten documents **not** used in LDA training(wiki)
-    with open(test_file2, 'r') as data_file:
-        test_docs_list  = json.load(data_file)['test_doc_list']
-    test_docs2 = test_docs_list  # test on 1/5 aftenposten docs
-    """
-    # test on the same 1000 aftenposten docs as in MAP
-    with open(test_file3, 'r') as data_file:
-        test_docs_list  = json.load(data_file)['test_doc_list']
-    test_docs3 = test_docs_list
 
     """
     # evaluate on 1k wiki documents **not** used in LDA training(wiki)
@@ -279,7 +267,7 @@ if __name__ == '__main__':
     #eval(dictionary1, mm_corpus1, corpus_dist1, wiki_docs, model_file1, test_docs3)  #wiki->wiki(train corpus)
     #eval(dictionary1, mm_corpus2, corpus_dist2, ap_docs, model_file1, test_docs3)  #wiki->ap(test corpus)
 
-    eval(dictionary2, mm_corpus2, corpus_dist2, ap_docs, model_file2, test_docs3)  #ap->ap(train/test corpus)
+    #eval(dictionary2, mm_corpus2, corpus_dist2, ap_docs, model_file2, test_docs3)  #ap->ap(train/test corpus)
 
     #eval(dictionary3, mm_corpus3, corpus_dist3, merged_docs, model_file3, test_docs3)  #merged->merged(train corpus)
     #eval(dictionary3, mm_corpus2, corpus_dist2, ap_docs, model_file3, test_docs3)  #merged->ap(test corpus)
