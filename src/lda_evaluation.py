@@ -21,6 +21,7 @@ from lda_model_train import model_file1, model_file2, model_file3
 from lda_model_train import dic_file1, dic_file2, dic_file3
 from lda_model_train import test_file1, test_file2, test_file3
 from lda_model_train import mcorpus_file3, mcorpus_file2, mcorpus_file1
+from lda_model_train import train_wiki_file, train_ap_file
 
 from lda_model_train import tokenize
 stoplist = get_stop_words('norwegian')
@@ -54,8 +55,10 @@ def eval_size(dictionary, corpus_dist, model, K):
         count = 0
         for (wid, prob) in model.get_topic_terms(i): # topn=10
             count += corpus_dist[wid]
+            #print(wid, prob, corpus_dist[wid])
+        #print("--------------------")
         size.append(count)   # number of tokens for each topic
-
+    #print(np.mean(size), tot)
     score = np.mean(size)/float(tot)
     print("{:.4f}".format(score))
 
@@ -91,7 +94,7 @@ def within_doc_rank(dictionary, model, K, corpus_docs):
 
     for tokens in corpus_docs:
 
-        topics = model.get_document_topics(dictionary.doc2bow(tokens))  #, minimum_probability=1.0/K)  # list of (topic-id, prob)
+        topics = model.get_document_topics(dictionary.doc2bow(tokens), minimum_probability=1.0/K)  # list of (topic-id, prob)
         num_topics = len(topics)
         topics = sorted(topics, key=itemgetter(1), reverse=True) # order by desc prob
 
@@ -127,7 +130,7 @@ def coherence(dictionary, model, K, mm_corpus):
     for doc in mm_corpus:
         #bow = dictionary.doc2bow(doc)
         max_freq = 0
-        for (wid, freq) in bow:
+        for (wid, freq) in doc:
             # term-doc frequency
             td_hash[wid][docid] = freq
 
@@ -194,7 +197,7 @@ def eval(dictionary, mm_corpus, corpus_dist, corpus_docs, model_file, test_docs3
 
         coherence(dictionary, lda, K, mm_corpus)
 
-        perplexity(dictionary, lda, test_docs3)
+        #perplexity(dictionary, lda, test_docs3)
 
 if __name__ == '__main__':
 
@@ -216,12 +219,46 @@ if __name__ == '__main__':
     mm_corpus1 = gensim.corpora.MmCorpus(mcorpus_file1)
     mm_corpus2 = gensim.corpora.MmCorpus(mcorpus_file2)
     mm_corpus3 = gensim.corpora.MmCorpus(mcorpus_file3)
+
     for doc in mm_corpus1:
-        corpus_dist1.update(dict(doc))
+        for (wid, freq) in doc:
+            if wid in corpus_dist1:
+                corpus_dist1[wid] += freq
+            else:
+                corpus_dist1[wid] = freq
+
     for doc in mm_corpus2:
-        corpus_dist2.update(dict(doc))
-    for doc in mm_corpus2:
-        corpus_dist2.update(dict(doc))
+        for (wid, freq) in doc:
+             if wid in corpus_dist2:
+                corpus_dist2[wid] += freq
+            else:
+                corpus_dist2[wid] = freq
+
+    for doc in mm_corpus3:
+        for (wid, freq) in doc:
+             if wid in corpus_dist3:
+                corpus_dist3[wid] += freq
+            else:
+                corpus_dist3[wid] = freq
+
+    print(len(corpus_dist1.keys()), np.sum(corpus_dist1.values()))
+    print(len(corpus_dist2.keys()), np.sum(corpus_dist2.values()))
+    print(len(corpus_dist3.keys()), np.sum(corpus_dist3.values()))
+    """
+    # evaluate on 1k wiki documents **not** used in LDA training(wiki)
+    with open(test_file1, 'r') as data_file:
+        test_docs_list  = json.load(data_file)['test_doc_list']
+    test_docs1 = test_docs_list  # test on random 1/5 20170501-wiki docs
+
+    # evaluate on 1k aftenposten documents **not** used in LDA training(wiki)
+    with open(test_file2, 'r') as data_file:
+        test_docs_list  = json.load(data_file)['test_doc_list']
+    test_docs2 = test_docs_list  # test on 1/5 aftenposten docs
+    """
+    # test on the same 1000 aftenposten docs as in MAP
+    with open(test_file3, 'r') as data_file:
+        test_docs_list  = json.load(data_file)['test_doc_list']
+    test_docs3 = test_docs_list
 
     """
     # evaluate on 1k wiki documents **not** used in LDA training(wiki)
@@ -239,10 +276,10 @@ if __name__ == '__main__':
         test_docs_list  = json.load(data_file)['test_doc_list']
     test_docs3 = test_docs_list
 
-    eval(dictionary1, mm_corpus1, corpus_dist1, wiki_docs, model_file1, test_docs3)  #wiki->wiki(train corpus)
-    eval(dictionary1, mm_corpus2, corpus_dist2, ap_docs, model_file1, test_docs3)  #wiki->ap(test corpus)
+    #eval(dictionary1, mm_corpus1, corpus_dist1, wiki_docs, model_file1, test_docs3)  #wiki->wiki(train corpus)
+    #eval(dictionary1, mm_corpus2, corpus_dist2, ap_docs, model_file1, test_docs3)  #wiki->ap(test corpus)
 
     eval(dictionary2, mm_corpus2, corpus_dist2, ap_docs, model_file2, test_docs3)  #ap->ap(train/test corpus)
 
-    eval(dictionary3, mm_corpus3, corpus_dist3, merged_docs, model_file3, test_docs3)  #merged->merged(train corpus)
-    eval(dictionary3, mm_corpus2, corpus_dist2, ap_docs, model_file3, test_docs3)  #merged->ap(test corpus)
+    #eval(dictionary3, mm_corpus3, corpus_dist3, merged_docs, model_file3, test_docs3)  #merged->merged(train corpus)
+    #eval(dictionary3, mm_corpus2, corpus_dist2, ap_docs, model_file3, test_docs3)  #merged->ap(test corpus)
