@@ -121,7 +121,7 @@ def main():
     """
     with open(test_file3, 'r') as data_file:
         data  = json.load(data_file)
-        test_size = data['test_size']
+        test_size = 2751 #data['test_size']
         test_doc_tag = data['test_doc_tag'][:test_size]
         test_doc_list = data['test_doc_list'][:test_size]
         test_doc_id = data['test_doc_id'][:test_size]
@@ -148,7 +148,7 @@ def main():
 
 
     #map(model_file1, dic_file1, test)
-    #map(model_file2, dic_file2, test)
+    map(model_file2, dic_file2, test)
     #map(model_file3, dic_file3, test)
 
 
