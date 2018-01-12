@@ -92,6 +92,8 @@ def iter_ap(dump_dir, mode, vol):  # train on several files, different when eval
                     tokens = []
                     for text in doc["content"]:  # for each line in each document
                         tokens = tokens + tokenize(d, text, vol)
+                    if len(tokens) < 100:
+                        continue
                     yield doc_id, doc_tag, tokens
 
 
@@ -103,7 +105,7 @@ def train():
     with open("vocalbulary.txt", 'r') as data_file:
         vol  = json.load(data_file)['vocalbulary']
     #vol = None
-
+    """
     doc_list = list(tokens for _, tokens in iter_wiki(train_file1, vol))
     num_doc = len(doc_list)
     print(num_doc)
@@ -124,6 +126,11 @@ def train():
 
     with open("wiki-vocalbulary.txt", 'w') as outfile:
         json.dump({"vocalbulary" : id2word_wiki.values()}, outfile)
+    """
+    id2word_wiki = gensim.corpora.Dictionary().load(dic_file1)
+    with open(train_wiki_file, 'r') as data_file:
+        train_doc_list1  = json.load(data_file)['train_doc_list']
+
 
     with open("wiki-vocalbulary.txt", 'r') as data_file:
         vol  = json.load(data_file)['vocalbulary']
