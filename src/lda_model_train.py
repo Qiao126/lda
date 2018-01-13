@@ -102,10 +102,10 @@ def train():
 
     # build dictionary: preprocesing on wiki
     # remove articles that are too short(<20 words) and metadata
-    with open("vocalbulary.txt", 'r') as data_file:
-        vol  = json.load(data_file)['vocalbulary']
-    #vol = None
-    """
+    #with open("vocalbulary.txt", 'r') as data_file:
+    #    vol  = json.load(data_file)['vocalbulary']
+    vol = None
+
     doc_list = list(tokens for _, tokens in iter_wiki(train_file1, vol))
     num_doc = len(doc_list)
     print(num_doc)
@@ -120,13 +120,13 @@ def train():
         json.dump({"test_doc_list" : doc_list[num_train:]}, outfile)
     id2word_wiki = gensim.corpora.Dictionary(train_doc_list1)
     # remove words occurs in <20 articles and >10% articles, keep 100,000 most frequent words
-    #id2word_wiki.filter_extremes(no_below=20, no_above=0.1)  # keep_n=100000, keep only the first keep_n most frequent tokens (or keep all if None).
+    id2word_wiki.filter_extremes(no_below=20, no_above=0.1)  # keep_n=100000, keep only the first keep_n most frequent tokens (or keep all if None).
     print (id2word_wiki)
     id2word_wiki.save(dic_file1)
-
+    """
     with open("wiki-vocalbulary.txt", 'w') as outfile:
         json.dump({"vocalbulary" : id2word_wiki.values()}, outfile)
-    """
+
     id2word_wiki = gensim.corpora.Dictionary().load(dic_file1)
     with open(train_wiki_file, 'r') as data_file:
         train_doc_list1  = json.load(data_file)['train_doc_list']
@@ -134,7 +134,7 @@ def train():
 
     with open("wiki-vocalbulary.txt", 'r') as data_file:
         vol  = json.load(data_file)['vocalbulary']
-
+    """
     # build dictionary: prepocessing on aftenposten
     doc_list = list(tokens for _, _, tokens in iter_ap(dump_dir2, "train", vol))
     num_doc = len(doc_list)
@@ -148,11 +148,11 @@ def train():
     with open(test_file2, 'w') as outfile:
         json.dump({"test_doc_list" : doc_list[num_train:]}, outfile)
     id2word_ap = gensim.corpora.Dictionary(train_doc_list2)
-    #id2word_ap.filter_extremes(no_below=20, no_above=0.1)
+    id2word_ap.filter_extremes(no_below=20, no_above=0.1)
     # id2word_ap = gensim.corpora.Dictionary().load(dic_file2)
     print(id2word_ap)
     id2word_ap.save(dic_file2)
-
+    """
     # from dictionary to corpus
     wiki_corpus = [id2word_wiki.doc2bow(tokens) for tokens in train_doc_list1]
     gensim.corpora.MmCorpus.serialize('../data/wiki_bow.mm', wiki_corpus)
@@ -177,7 +177,7 @@ def train():
     print(mm_corpus3)
 
     train_para(mm_corpus3, id2word_wiki, model_file3)
-
+    """
 def train_para(mm_corpus, dictionary, model_file):
     #Knum = np.arange(10, 500, 40) # number of topics
     Knum = np.arange(10, 160, 10) # number of topics
