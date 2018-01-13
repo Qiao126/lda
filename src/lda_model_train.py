@@ -105,7 +105,7 @@ def train():
     #with open("vocalbulary.txt", 'r') as data_file:
     #    vol  = json.load(data_file)['vocalbulary']
     vol = None
-
+    """
     doc_list = list(tokens for _, tokens in iter_wiki(train_file1, vol))
     num_doc = len(doc_list)
     print(num_doc)
@@ -123,7 +123,7 @@ def train():
     id2word_wiki.filter_extremes(no_below=20, no_above=0.1)  # keep_n=100000, keep only the first keep_n most frequent tokens (or keep all if None).
     print (id2word_wiki)
     id2word_wiki.save(dic_file1)
-    """
+
     with open("wiki-vocalbulary.txt", 'w') as outfile:
         json.dump({"vocalbulary" : id2word_wiki.values()}, outfile)
 
@@ -158,15 +158,16 @@ def train():
     gensim.corpora.MmCorpus.serialize('../data/wiki_bow.mm', wiki_corpus)
     mm_corpus1 = gensim.corpora.MmCorpus('../data/wiki_bow.mm')
     print(mm_corpus1)
+    """
     ap_corpus = [id2word_ap.doc2bow(tokens) for tokens in train_doc_list2]
     gensim.corpora.MmCorpus.serialize('../data/ap_bow.mm', ap_corpus)
     mm_corpus2 = gensim.corpora.MmCorpus('../data/ap_bow.mm')
     print(mm_corpus2)
 
     # train the model
-    train_para(mm_corpus1, id2word_wiki, model_file1)
+    #train_para(mm_corpus1, id2word_wiki, model_file1)
     train_para(mm_corpus2, id2word_ap, model_file2)
-
+    """
     # merged corpus
     dict2_to_dict1 = id2word_wiki.merge_with(id2word_ap)
     merged_corpus = itertools.chain(mm_corpus1, dict2_to_dict1[mm_corpus2])
