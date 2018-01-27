@@ -205,8 +205,16 @@ if __name__ == '__main__':
 
     #with open(train_wiki_file, 'r') as data_file:
     #    wiki_docs  = json.load(data_file)['train_doc_list']
-    with open(train_ap_file, 'r') as data_file:
-        ap_docs  = json.load(data_file)['train_doc_list']
+
+    #with open(train_ap_file, 'r') as data_file:
+    #    ap_docs  = json.load(data_file)['train_doc_list']
+    with open(test_file3, 'r') as data_file:
+        data  = json.load(data_file)
+        test_size = data['test_size']
+        #ap train docs
+        ap_docs = data['test_doc_list'][test_size:]
+        # test on the same 10% aftenposten tagged docs as in MAP
+        test_docs3 = data['test_doc_list'][:test_size]
     #merged_docs = wiki_docs + ap_docs
 
     #dictionary1 = gensim.corpora.Dictionary().load(dic_file1)
@@ -259,10 +267,6 @@ if __name__ == '__main__':
         test_docs_list  = json.load(data_file)['test_doc_list']
     test_docs2 = test_docs_list  # test on 1/5 aftenposten docs
     """
-    # test on the same 1000 aftenposten docs as in MAP
-    with open(test_file3, 'r') as data_file:
-        test_docs_list  = json.load(data_file)['test_doc_list']
-    test_docs3 = test_docs_list
 
     #eval(dictionary1, mm_corpus1, corpus_dist1, wiki_docs, model_file1, test_docs3)  #wiki->wiki(train corpus)
     #eval(dictionary1, mm_corpus2, corpus_dist2, ap_docs, model_file1, test_docs3)  #wiki->ap(test corpus)
