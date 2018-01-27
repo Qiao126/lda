@@ -75,7 +75,7 @@ def map(model_file, dic_file, test):
 
 
 def main():
-
+    """
     #with open("vocalbulary.txt", 'r') as data_file:
     #    vol  = json.load(data_file)['vocalbulary']
     vol = None
@@ -130,7 +130,7 @@ def main():
     test = {}
     for did, tag, doc in zip(test_doc_id, test_doc_tag, test_doc_list):
         test[did] = (tag, doc)
-    """
+
     """ Check overlapping between MAP vocalbulary and input vocalbulary """
     """
     map_vol = gensim.corpora.Dictionary(test_doc_list).values()
@@ -147,11 +147,11 @@ def main():
     #with open("vocalbulary.txt", 'w') as outfile:
     #    json.dump({"vocalbulary" : list(set(vol2).intersection(vol1))}, outfile)
 
-
+    """
     #map(model_file1, dic_file1, test)
     map(model_file2, dic_file2, test)
     #map(model_file3, dic_file3, test)
-    """
+
 
 if __name__ == '__main__':
     main()

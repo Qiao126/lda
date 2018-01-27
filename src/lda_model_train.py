@@ -19,7 +19,8 @@ from stop_words import get_stop_words
 stoplist = get_stop_words('norwegian')
 
 mcorpus_file3 = '../data/merged_bow.mm'
-mcorpus_file2 = '../data/ap_bow.mm'
+#mcorpus_file2 = '../data/ap_bow.mm'
+mcorpus_file2 = '../data/ap2_bow.mm'
 mcorpus_file1 = '../data/wiki_bow.mm'
 
 dic_file1 = "lda.no.dictionary"
@@ -28,8 +29,10 @@ train_file1 = '../data/nowiki-latest-pages-articles.xml.bz2'
 train_wiki_file = 'train_doc_list_wiki.json'
 test_file1 = 'test_doc_list_wiki.json'
 
-dic_file2 = "lda.ap.dictionary"
-model_file2 = 'lda.ap.model.pretrained.'
+#dic_file2 = "lda.ap.dictionary"
+#model_file2 = 'lda.ap.model.pretrained.'
+dic_file2 = "lda.ap2.dictionary"
+model_file2 = 'lda.ap2.model.pretrained.'
 #dump_dir2 = '../data/json/10years/'
 dump_dir2 = '../data/output/'
 train_ap_file = 'train_doc_list_aftenposten.json'
@@ -155,46 +158,58 @@ def train():
         test_size = data['test_size']
         train_doc_list2 = data['test_doc_list'][test_size:]
 
-    id2word_ap = gensim.corpora.Dictionary(train_doc_list2)
-    id2word_ap.filter_extremes(no_below=20, no_above=0.1)
-    # id2word_ap = gensim.corpora.Dictionary().load(dic_file2)
-    print(id2word_ap)
-    id2word_ap.save(dic_file2)
-    """
-    # from dictionary to corpus
-    wiki_corpus = [id2word_wiki.doc2bow(tokens) for tokens in train_doc_list1]
-    gensim.corpora.MmCorpus.serialize('../data/wiki_bow.mm', wiki_corpus)
-    mm_corpus1 = gensim.corpora.MmCorpus('../data/wiki_bow.mm')
-    print(mm_corpus1)
-    """
-    ap_corpus = [id2word_ap.doc2bow(tokens) for tokens in train_doc_list2]
-    gensim.corpora.MmCorpus.serialize('../data/ap_bow.mm', ap_corpus)
-    mm_corpus2 = gensim.corpora.MmCorpus('../data/ap_bow.mm')
-    print(mm_corpus2)
+    train_docs = []
+    for sd in range(10):
+        random.seed(sd)
+        random.shuffle(train_doc_list2)
+        fold = int(len(train_doc_list2) / 2)
+        train_docs.append(train_doc_list2[:fold])
+        train_docs.append(train_doc_list2[fold:])
 
-    # train the model
-    #train_para(mm_corpus1, id2word_wiki, model_file1)
-    train_para(mm_corpus2, id2word_ap, model_file2)
-    """
-    # merged corpus
-    dict2_to_dict1 = id2word_wiki.merge_with(id2word_ap)
-    merged_corpus = itertools.chain(mm_corpus1, dict2_to_dict1[mm_corpus2])
-    id2word_wiki.save(dic_file3)
-    print(id2word_wiki)
-    gensim.corpora.MmCorpus.serialize('../data/merged_bow.mm', merged_corpus)
-    mm_corpus3 = gensim.corpora.MmCorpus('../data/merged_bow.mm')
-    print(mm_corpus3)
+    for i in len(train_docs):
+        print("fold ", i)
+        id2word_ap = gensim.corpora.Dictionary(train_docs[i])
+        id2word_ap.filter_extremes(no_below=20, no_above=0.1)
+        # id2word_ap = gensim.corpora.Dictionary().load(dic_file2)
+        print(id2word_ap)
+        #id2word_ap.save(dic_file2)
+        id2word_ap.save('lda.ap2.' + str(i) + '.dictionary')
+        """
+        # from dictionary to corpus
+        wiki_corpus = [id2word_wiki.doc2bow(tokens) for tokens in train_doc_list1]
+        gensim.corpora.MmCorpus.serialize(mcorpus_file1, wiki_corpus)
+        mm_corpus1 = gensim.corpora.MmCorpus(mcorpus_file1)
+        print(mm_corpus1)
+        """
+        mm_corpus2 = '../data/ap2_bow.' + str(i) +'.mm'
+        ap_corpus = [id2word_ap.doc2bow(tokens) for tokens in train_docs[i]]
+        gensim.corpora.MmCorpus.serialize(mm_corpus2, ap_corpus)
+        mm_corpus2 = gensim.corpora.MmCorpus(mm_corpus2)
+        print(mm_corpus2)
 
-    train_para(mm_corpus3, id2word_wiki, model_file3)
-    """
-def train_para(mm_corpus, dictionary, model_file):
-    #Knum = np.arange(10, 500, 40) # number of topics
-    Knum = np.arange(10, 160, 10) # number of topics
+        # train the model
+        #train_para(mm_corpus1, id2word_wiki, model_file1)
+        train_para(mm_corpus2, id2word_ap, model_file2, i)
+        """
+        # merged corpus
+        dict2_to_dict1 = id2word_wiki.merge_with(id2word_ap)
+        merged_corpus = itertools.chain(mm_corpus1, dict2_to_dict1[mm_corpus2])
+        id2word_wiki.save(dic_file3)
+        print(id2word_wiki)
+        gensim.corpora.MmCorpus.serialize(mcorpus_file3, merged_corpus)
+        mm_corpus3 = gensim.corpora.MmCorpus(mcorpus_file3)
+        print(mm_corpus3)
 
+        train_para(mm_corpus3, id2word_wiki, model_file3)
+        """
+def train_para(mm_corpus, dictionary, model_file, i):
+    #Knum = np.arange(10, 160, 10) # number of topics
+    Knum = [100]
     for K in Knum:
         print ("Train: " + str(model_file) + str(K))
         lda = gensim.models.ldamodel.LdaModel(corpus=mm_corpus, id2word=dictionary, num_topics=K, alpha='auto', eta='auto')
-        lda.save(model_file + str(K))
+        lda.save(model_file + str(K) + '.' + str(i))
+
 
 if __name__ == '__main__':
     train()
