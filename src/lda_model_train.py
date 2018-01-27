@@ -30,19 +30,20 @@ test_file1 = 'test_doc_list_wiki.json'
 
 dic_file2 = "lda.ap.dictionary"
 model_file2 = 'lda.ap.model.pretrained.'
-dump_dir2 = '../data/json/10years/'
+#dump_dir2 = '../data/json/10years/'
+dump_dir2 = '../data/output/'
 train_ap_file = 'train_doc_list_aftenposten.json'
 test_file2 = 'test_doc_list_aftenposten.json'
 
 model_file3 = 'lda.merged.model.pretrained.'
 dic_file3 = "lda.merged.dictionary"
 
-test_file3 = '../data/test_doc_list_apTag.json'
+test_file3 = '../data/test_doc_list_apSection.json'
 
 SEED = 126
 
-with open(test_file3, 'r') as data_file:
-    testset  = json.load(data_file)['test_doc_id']
+#with open(test_file3, 'r') as data_file:
+#    testset  = json.load(data_file)['test_doc_id']
 
 
 def tokenize(d, text, vol=None):
@@ -79,16 +80,16 @@ def iter_ap(dump_dir, mode, vol):  # train on several files, different when eval
     d = enchant.Dict("en_US")
     for dump_file in os.listdir(dump_dir):
         path = dump_dir + dump_file
-        print dump_file
+        #print dump_file
         with open(path) as f:
             for line in f:
                 doc = json.loads(line)
                 doc_id = doc["id"]
 
-                if mode == "train" and doc_id in testset:
+                if mode == "train" and doc_id in testset: #skip test set
                     continue
                 else:
-                    doc_tag = doc["tags"]
+                    doc_tag = doc["section"] #doc["tags"]
                     tokens = []
                     for text in doc["content"]:  # for each line in each document
                         tokens = tokens + tokenize(d, text, vol)
@@ -136,6 +137,7 @@ def train():
         vol  = json.load(data_file)['vocalbulary']
     """
     # build dictionary: prepocessing on aftenposten
+    """
     doc_list = list(tokens for _, _, tokens in iter_ap(dump_dir2, "train", vol))
     num_doc = len(doc_list)
     print(num_doc)
@@ -147,6 +149,12 @@ def train():
         json.dump({"train_doc_list" : train_doc_list2}, outfile)
     with open(test_file2, 'w') as outfile:
         json.dump({"test_doc_list" : doc_list[num_train:]}, outfile)
+    """
+    with open(test_file3, 'r') as data_file:
+        data  = json.load(data_file)
+        test_size = data['test_size']
+        train_doc_list2 = data['test_doc_list'][test_size:]
+
     id2word_ap = gensim.corpora.Dictionary(train_doc_list2)
     id2word_ap.filter_extremes(no_below=20, no_above=0.1)
     # id2word_ap = gensim.corpora.Dictionary().load(dic_file2)
