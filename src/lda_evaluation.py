@@ -197,7 +197,7 @@ def eval(dictionary, mm_corpus, corpus_dist, corpus_docs, model_file, test_docs3
 
         coherence(dictionary, lda, K, mm_corpus)
 
-        #perplexity(dictionary, lda, test_docs3)
+        perplexity(dictionary, lda, test_docs3)
 
 if __name__ == '__main__':
 
