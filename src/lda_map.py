@@ -31,16 +31,17 @@ def average_precision(r):
 def mean_average_precision(rs):
     return np.mean([average_precision(r) for r in rs])
 
-def map(model_file, dic_file, test):
+def map(model_file, dic_file, test, i):
     test_size = len(test.keys())
     dictionary = gensim.corpora.Dictionary().load(dic_file)
-    Knum = np.arange(10, 160, 10) # number of topics
+    #Knum = np.arange(10, 160, 10) # number of topics
+    Knum = [100]
     for K in Knum:
         rs = []
         doc_topics = {}
         sim_dist = {}
-        print("Load model: " + str(model_file) + str(K) + "---------------------------------------\n")
-        lda = gensim.models.ldamodel.LdaModel.load(model_file + str(K))
+        print("Load model: " + str(model_file) + str(K) + "---------------------------------------", i)
+        lda = gensim.models.ldamodel.LdaModel.load(model_file + str(K) + '.' + str(i))
         for did, doc in test.items():
             topics = lda.get_document_topics(dictionary.doc2bow(doc[1]))  #list of (topic-id, prob)
             #topics = sorted(topics, key=itemgetter(1), reverse=True) # order by desc prob
@@ -121,7 +122,8 @@ def main():
     """
     with open(test_file3, 'r') as data_file:
         data  = json.load(data_file)
-        test_size = data['test_size']
+        #test_size = data['test_size']
+        test_size = 1000
         test_doc_tag = data['test_doc_tag'][:test_size]
         test_doc_list = data['test_doc_list'][:test_size]
         test_doc_id = data['test_doc_id'][:test_size]
@@ -148,9 +150,10 @@ def main():
     #    json.dump({"vocalbulary" : list(set(vol2).intersection(vol1))}, outfile)
 
     """
-    #map(model_file1, dic_file1, test)
-    map(model_file2, dic_file2, test)
-    #map(model_file3, dic_file3, test)
+    for i in range(20):  #20 folds
+        #map(model_file1, dic_file1, test)
+        map(model_file2, dic_file2, test, i)
+        #map(model_file3, dic_file3, test)
 
 
 if __name__ == '__main__':

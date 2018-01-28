@@ -166,7 +166,7 @@ def train():
         train_docs.append(train_doc_list2[:fold])
         train_docs.append(train_doc_list2[fold:])
 
-    for i in len(train_docs):
+    for i in range(len(train_docs)):
         print("fold ", i)
         id2word_ap = gensim.corpora.Dictionary(train_docs[i])
         id2word_ap.filter_extremes(no_below=20, no_above=0.1)
