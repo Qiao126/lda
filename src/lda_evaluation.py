@@ -214,6 +214,7 @@ if __name__ == '__main__':
         #ap train docs
         ap_docs = data['test_doc_list'][test_size:]
         # test on the same 10% aftenposten tagged docs as in MAP
+        test_size = 1000
         test_docs3 = data['test_doc_list'][:test_size]
     #merged_docs = wiki_docs + ap_docs
 

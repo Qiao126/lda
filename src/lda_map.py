@@ -121,7 +121,8 @@ def main():
     """
     with open(test_file3, 'r') as data_file:
         data  = json.load(data_file)
-        test_size = data['test_size']
+        #test_size = data['test_size']
+        test_size = 1000
         test_doc_tag = data['test_doc_tag'][:test_size]
         test_doc_list = data['test_doc_list'][:test_size]
         test_doc_id = data['test_doc_id'][:test_size]
