@@ -62,19 +62,19 @@ def eval_size(dictionary, corpus_dist, model, K):
     score = np.mean(size)/float(tot)
     print("{:.4f}".format(score))
 
-
-def corpus_difference(dictionary, corpus_dist, model, K): # same as topic size
-    sim = []
-    copy = []
-    num_tokens = len(dictionary.keys())
-    #print(num_tokens, len(corpus_dist.keys()))
-
+def prep_corpusdiff(corpus_dist):
+    corpus_distribution = []
     freqs = corpus_dist.values()
     sum_tokens = np.sum(freqs)
     for x in corpus_dist:
         tmp = (x, corpus_dist[x]/float(sum_tokens))  # a list of (word_id, word_prob) 2-tuples.
-        copy.append(tmp)
-    corpus_distribution = copy
+        corpus_distribution.append(tmp)
+    return corpus_distribution
+
+def corpus_difference(dictionary, corpus_distribution, model, K): # same as topic size
+    sim = []
+    num_tokens = len(dictionary.keys())
+    #print(num_tokens, len(corpus_dist.keys()))
 
     for i in range(K):
         probs = [None] * num_tokens
@@ -121,8 +121,7 @@ def within_doc_rank(dictionary, model, K, corpus_docs):
     score = np.mean(scores)
     print("{:.4f}".format(score))
 
-
-def coherence(dictionary, model, K, mm_corpus):
+def prep_coherence(mm_corpus):
     # build up the term-doc matrix
     td_hash = collections.defaultdict(dict)
     doc_max = {}
@@ -146,6 +145,10 @@ def coherence(dictionary, model, K, mm_corpus):
         num_doc = len(td_hash[wordid].keys())
         for docid in td_hash[wordid].keys():
             td_hash[wordid][docid] = (td_hash[wordid][docid] / float(doc_max[docid]) + 0.5) * math.log(tot_doc / float(num_doc))
+    return td_hash, doc_max
+
+
+def coherence(dictionary, model, K, td_hash, doc_max):
     coherences = []
     for i in range(K):
         top_words = [x[0] for x in model.get_topic_terms(i)]  #topn=10
@@ -177,25 +180,26 @@ def perplexity(dictionary, model, test_docs):
     print("{:.4f}".format(model.log_perplexity(chunk, total_docs=None)))
 
 
-def eval(dictionary, mm_corpus, corpus_dist, corpus_docs, model_file, test_docs3): # fixed vocalbulary, ap-corpus, and diff models
+def eval(dictionary, mm_corpus, corpus_dist, corpus_docs, model_file, test_docs3, i): # fixed vocalbulary, ap-corpus, and diff models
     print(dictionary)
     print(mm_corpus)
-
+    corpus_distribution = prep_corpusdiff(corpus_dist)
+    td_hash, doc_max = prep_coherence(mm_corpus)
     #Knum = np.arange(10, 500, 40)  # number of topics
     Knum = np.arange(10, 160, 10)
     for K in Knum:
-        print("Train on: " + str(model_file) + str(K) + "---------------------------------------")
-        lda = gensim.models.ldamodel.LdaModel.load(model_file + str(K))
+        print("Train on: " + str(model_file) + str(K) + "---------------------------------------", i)
+        lda = gensim.models.ldamodel.LdaModel.load(model_file + str(K) + '.' + str(i))
 
         intra_inter(dictionary, lda, test_docs3)
 
         eval_size(dictionary, corpus_dist, lda, K)
 
-        corpus_difference(dictionary, corpus_dist, lda, K)
+        corpus_difference(dictionary, corpus_distribution, lda, K)
 
         within_doc_rank(dictionary, lda, K, corpus_docs)
 
-        coherence(dictionary, lda, K, mm_corpus)
+        coherence(dictionary, lda, K, td_hash, doc_max)
 
         perplexity(dictionary, lda, test_docs3)
 
@@ -268,11 +272,11 @@ if __name__ == '__main__':
         test_docs_list  = json.load(data_file)['test_doc_list']
     test_docs2 = test_docs_list  # test on 1/5 aftenposten docs
     """
+    for i in range(20): #20 folds
+        #eval(dictionary1, mm_corpus1, corpus_dist1, wiki_docs, model_file1, test_docs3)  #wiki->wiki(train corpus)
+        #eval(dictionary1, mm_corpus2, corpus_dist2, ap_docs, model_file1, test_docs3)  #wiki->ap(test corpus)
 
-    #eval(dictionary1, mm_corpus1, corpus_dist1, wiki_docs, model_file1, test_docs3)  #wiki->wiki(train corpus)
-    #eval(dictionary1, mm_corpus2, corpus_dist2, ap_docs, model_file1, test_docs3)  #wiki->ap(test corpus)
+        eval(dictionary2, mm_corpus2, corpus_dist2, ap_docs, model_file2, test_docs3, i)  #ap->ap(train/test corpus)
 
-    eval(dictionary2, mm_corpus2, corpus_dist2, ap_docs, model_file2, test_docs3)  #ap->ap(train/test corpus)
-
-    #eval(dictionary3, mm_corpus3, corpus_dist3, merged_docs, model_file3, test_docs3)  #merged->merged(train corpus)
-    #eval(dictionary3, mm_corpus2, corpus_dist2, ap_docs, model_file3, test_docs3)  #merged->ap(test corpus)
+        #eval(dictionary3, mm_corpus3, corpus_dist3, merged_docs, model_file3, test_docs3)  #merged->merged(train corpus)
+        #eval(dictionary3, mm_corpus2, corpus_dist2, ap_docs, model_file3, test_docs3)  #merged->ap(test corpus)
