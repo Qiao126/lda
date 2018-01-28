@@ -152,7 +152,8 @@ def main():
     """
     for i in range(20):  #20 folds
         #map(model_file1, dic_file1, test)
-        map(model_file2, dic_file2, test, i)
+        #map(model_file2, dic_file2, test)
+        map(model_file2, 'lda.ap2.' + str(i) + '.dictionary', test, i)
         #map(model_file3, dic_file3, test)
 
 
