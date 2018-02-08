@@ -22,7 +22,7 @@ from lda_model_train import dic_file1, dic_file2, dic_file3
 from lda_model_train import test_file1, test_file2, test_file3
 from lda_model_train import mcorpus_file3, mcorpus_file2, mcorpus_file1
 from lda_model_train import train_wiki_file, train_ap_file
-
+from lda_model_train import SEED
 from lda_model_train import tokenize
 stoplist = get_stop_words('norwegian')
 
@@ -60,7 +60,7 @@ def eval_size(dictionary, corpus_dist, model, K):
         size.append(count)   # number of tokens for each topic
     #print(np.mean(size), tot)
     score = np.mean(size)/float(tot)
-    print("{:.4f}".format(score))
+    print("{:.8f}".format(score))
 
 def prep_corpusdiff(corpus_dist):
     corpus_distribution = []
@@ -115,6 +115,7 @@ def within_doc_rank(dictionary, model, K, corpus_docs):
         if t not in top_hash:
             representitive =  0;
         else:
+            print(top_hash[t], topic_doc[t])
             representitive = float(top_hash[t]) / topic_doc[t]   # no smoothing
 
         scores.append(representitive)
@@ -186,7 +187,8 @@ def eval(dictionary, mm_corpus, corpus_dist, corpus_docs, model_file, test_docs3
     corpus_distribution = prep_corpusdiff(corpus_dist)
     td_hash, doc_max = prep_coherence(mm_corpus)
     #Knum = np.arange(10, 500, 40)  # number of topics
-    Knum = np.arange(10, 160, 10)
+    #Knum = np.arange(10, 160, 10)
+    Knum = [100]
     for K in Knum:
         print("Train on: " + str(model_file) + str(K) + "---------------------------------------", i)
         lda = gensim.models.ldamodel.LdaModel.load(model_file + str(K) + '.' + str(i))
@@ -222,13 +224,10 @@ if __name__ == '__main__':
         test_docs3 = data['test_doc_list'][:test_size]
     #merged_docs = wiki_docs + ap_docs
 
-    train_docs = []
-    for sd in range(10):
-        random.seed(sd)
-        random.shuffle(train_doc_list2)
-        fold = int(len(train_doc_list2) / 2)
-        train_docs.append(train_doc_list2[:fold])
-        train_docs.append(train_doc_list2[fold:])
+    random.seed(SEED)
+    random.shuffle(train_doc_list2)
+    fold = len(train_doc_list2)/20
+    train_docs = [data[x:x+fold] for x in xrange(0, len(train_doc_list2), fold)]
 
     for i in range(20): #20 folds
         ap_docs = train_docs[i]

@@ -37,3 +37,35 @@ evaluation:
 wiki: MmCorpus(55502 documents, 69530 features, 11060342 non-zero entries)
 af: MmCorpus(113960 documents, 45976 features, 10932030 non-zero entries)
 merged: MmCorpus(169462 documents, 82965 features, 21992372 non-zero entries)
+
+
+
+
+
+before fix vocabulary:
+
+MmCorpus(55503 documents, 69499 features, 11053409 non-zero entries)
+MmCorpus(113960 documents, 46112 features, 10928012 non-zero entries)
+MmCorpus(169463 documents, 82994 features, 21981421 non-zero entries)
+(69499, 18178594.0)  ~327 tokens/doc
+(46112, 14538000.0)  ~127 tokens/doc
+(82994, 32716594.0)
+
+
+after fix vocabulary(ap with short articles)
+
+MmCorpus(22252 documents, 32379 features, 5964038 non-zero entries)
+MmCorpus(91948 documents, 32379 features, 6749656 non-zero entries)
+MmCorpus(114200 documents, 32379 features, 12713694 non-zero entries)
+(32379, 10281671.0)  ~462 tokens per doc  (long articles > 200 tokens)
+(32379, 8963415.0)   ~97 tokens per doc
+(32379, 19245086.0)  ~168 tokens per doc
+
+
+after fix vocabulary(filter short articles (tokens<100) in ap)
+
+
+
+
+
+?

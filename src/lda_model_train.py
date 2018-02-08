@@ -158,13 +158,10 @@ def train():
         test_size = data['test_size']
         train_doc_list2 = data['test_doc_list'][test_size:]
 
-    train_docs = []
-    for sd in range(10):
-        random.seed(sd)
-        random.shuffle(train_doc_list2)
-        fold = int(len(train_doc_list2) / 2)
-        train_docs.append(train_doc_list2[:fold])
-        train_docs.append(train_doc_list2[fold:])
+    random.seed(SEED)
+    random.shuffle(train_doc_list2)
+    fold = len(train_doc_list2)/20
+    train_docs = [data[x:x+fold] for x in xrange(0, len(train_doc_list2), fold)]
 
     for i in range(len(train_docs)):
         print("fold ", i)
