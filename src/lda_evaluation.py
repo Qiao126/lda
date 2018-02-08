@@ -226,8 +226,11 @@ if __name__ == '__main__':
 
     random.seed(SEED)
     random.shuffle(train_doc_list2)
-    fold = len(train_doc_list2)/20
-    train_docs = [data[x:x+fold] for x in xrange(0, len(train_doc_list2), fold)]
+    fold = int(len(train_doc_list2)/20)
+    train_docs = []
+    for i in range(20):
+        train_docs.append(train_doc_list2[:fold])
+        train_doc_list2 = train_doc_list2[fold:]
 
     for i in range(20): #20 folds
         ap_docs = train_docs[i]
