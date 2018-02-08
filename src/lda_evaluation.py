@@ -16,6 +16,7 @@ import collections
 import random
 from stop_words import get_stop_words
 from operator import itemgetter
+import datetime
 
 from lda_model_train import model_file1, model_file2, model_file3
 from lda_model_train import dic_file1, dic_file2, dic_file3
@@ -192,17 +193,17 @@ def eval(dictionary, mm_corpus, corpus_dist, corpus_docs, model_file, test_docs3
     for K in Knum:
         print("Train on: " + str(model_file) + str(K) + "---------------------------------------", i)
         lda = gensim.models.ldamodel.LdaModel.load(model_file + str(K) + '.' + str(i))
-
+        print("inter-intra", datetime.datetime.now())
         intra_inter(dictionary, lda, test_docs3)
-
+        print("size", datetime.datetime.now())
         eval_size(dictionary, corpus_dist, lda, K)
-
+        print("corpus_diff", datetime.datetime.now())
         corpus_difference(dictionary, corpus_distribution, lda, K)
-
+        print("within_doc_rank", datetime.datetime.now())
         within_doc_rank(dictionary, lda, K, corpus_docs)
-
+        print("coherence", datetime.datetime.now())
         coherence(dictionary, lda, K, td_hash, doc_max)
-
+        print("perplexity", datetime.datetime.now())
         perplexity(dictionary, lda, test_docs3)
 
 if __name__ == '__main__':
@@ -232,7 +233,7 @@ if __name__ == '__main__':
         train_docs.append(train_doc_list2[:fold])
         train_doc_list2 = train_doc_list2[fold:]
 
-    for i in range(20): #20 folds
+    for i in range(20): #20 subsets
         ap_docs = train_docs[i]
         #dictionary1 = gensim.corpora.Dictionary().load(dic_file1)
         dictionary2 = gensim.corpora.Dictionary().load('lda.ap2.' + str(i) + '.dictionary')
@@ -289,6 +290,6 @@ if __name__ == '__main__':
         #eval(dictionary1, mm_corpus2, corpus_dist2, ap_docs, model_file1, test_docs3)  #wiki->ap(test corpus)
 
         eval(dictionary2, mm_corpus2, corpus_dist2, ap_docs, model_file2, test_docs3, i)  #ap->ap(train/test corpus)
-
+        break
         #eval(dictionary3, mm_corpus3, corpus_dist3, merged_docs, model_file3, test_docs3)  #merged->merged(train corpus)
         #eval(dictionary3, mm_corpus2, corpus_dist2, ap_docs, model_file3, test_docs3)  #merged->ap(test corpus)
