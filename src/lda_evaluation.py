@@ -59,8 +59,8 @@ def eval_size(dictionary, corpus_dist, model, K):
         #print("--------------------")
         size.append(count)   # number of tokens for each topic
     #print(np.mean(size), tot)
-    score = np.mean(size)#/float(tot)
-    print("{:.4f}".format(score))
+    score = np.mean(size)/float(tot)
+    print("{:.8f}".format(score))
 
 def prep_corpusdiff(corpus_dist):
     corpus_distribution = []
@@ -115,6 +115,7 @@ def within_doc_rank(dictionary, model, K, corpus_docs):
         if t not in top_hash:
             representitive =  0;
         else:
+            print(top_hash[t], topic_doc[t])
             representitive = float(top_hash[t]) / topic_doc[t]   # no smoothing
 
         scores.append(representitive)
