@@ -8,6 +8,8 @@ import gensim
 import numpy as np
 import json
 import random
+import psycopg2
+
 
 SEED = 126
 
@@ -32,6 +34,16 @@ def mean_average_precision(rs):
     return np.mean([average_precision(r) for r in rs])
 
 def map(model_file, dic_file, test, i):
+    conn = psycopg2.connect("host=localhost dbname=postgres user=postgres")
+    cur = conn.cursor()
+    cur.execute(
+        """
+        CREATE TABLE similarity(
+            id1 text PRIMARY KEY,
+            id2 text,
+            cossim float)
+        """
+    )
     test_size = len(test.keys())
     dictionary = gensim.corpora.Dictionary().load(dic_file)
     #Knum = np.arange(10, 160, 10) # number of topics
@@ -58,14 +70,23 @@ def map(model_file, dic_file, test, i):
                 if docs[j] not in sim_dist:
                     sim_dist[docs[j]] = {}
                 sim = gensim.matutils.cossim(doc_topics[docs[i]], doc_topics[docs[j]]) #match topic-id separately in vec1, vec2 to calculate cosine
-                sim_dist[docs[i]][docs[j]] = sim
-                sim_dist[docs[j]][docs[i]] = sim #save twice
+                #sim_dist[docs[i]][docs[j]] = sim
+                #sim_dist[docs[j]][docs[i]] = sim #save twice
+                insert_query = "INSERT INTO similarity VALUES ({}, {}, {})".format(docs[i], docs[j], sim)
+                cur.execute(insert_query)
+                insert_query = "INSERT INTO similarity VALUES ({}, {}, {})".format(docs[j], docs[i], sim)
+                cur.execute(insert_query)
+                conn.commit()
         rs = []
         for (i, did) in enumerate(docs):
             r = []
             #print("doc", did, "-------------------------------------------")
-            rank_dist = OrderedDict(sorted(sim_dist[did].items(), key=itemgetter(1), reverse=True))
-            for (key, value) in rank_dist.items():
+            #rank_dist = OrderedDict(sorted(sim_dist[did].items(), key=itemgetter(1), reverse=True))
+            query = "SELECT id2 FROM similarity WHERE id1 = {} ORDER BY cossim DESC".format(did)
+            cur.execute(query)
+            id2_list = cur.fetchall()
+            #for (key, value) in rank_dist.items():
+            for key in id2_list:
                 #print(key, value)
                 if test[did][0] == test[key][0]: #two docs have the same tag
                     r.append(1)
@@ -73,7 +94,7 @@ def map(model_file, dic_file, test, i):
                     r.append(0)
             rs.append(r)
         print(mean_average_precision(rs))
-
+    conn.close ()
 
 def main():
     """
