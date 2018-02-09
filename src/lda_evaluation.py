@@ -116,7 +116,7 @@ def within_doc_rank(dictionary, model, K, corpus_docs):
         if t not in top_hash:
             representitive =  0;
         else:
-            print(top_hash[t], topic_doc[t])
+            #print(top_hash[t], topic_doc[t])
             representitive = float(top_hash[t]) / topic_doc[t]   # no smoothing
 
         scores.append(representitive)
@@ -221,7 +221,7 @@ if __name__ == '__main__':
         #ap train docs
         train_doc_list2 = data['test_doc_list'][test_size:]
         # test on the same 10% aftenposten tagged docs as in MAP
-        test_size = 1000
+        #test_size = 1000
         test_docs3 = data['test_doc_list'][:test_size]
     #merged_docs = wiki_docs + ap_docs
 
@@ -290,6 +290,6 @@ if __name__ == '__main__':
         #eval(dictionary1, mm_corpus2, corpus_dist2, ap_docs, model_file1, test_docs3)  #wiki->ap(test corpus)
 
         eval(dictionary2, mm_corpus2, corpus_dist2, ap_docs, model_file2, test_docs3, i)  #ap->ap(train/test corpus)
-        break
+    
         #eval(dictionary3, mm_corpus3, corpus_dist3, merged_docs, model_file3, test_docs3)  #merged->merged(train corpus)
         #eval(dictionary3, mm_corpus2, corpus_dist2, ap_docs, model_file3, test_docs3)  #merged->ap(test corpus)
