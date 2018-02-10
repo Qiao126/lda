@@ -1,3 +1,4 @@
+#!/usr/local/bin/python
 from lda_model_train import iter_ap, dump_dir2
 from collections import Counter, OrderedDict
 from lda_model_train import model_file1, model_file2, model_file3
@@ -25,6 +26,8 @@ def precision_at_k(r, k):
 def average_precision(r):
     r = np.asarray(r) != 0
     out = [precision_at_k(r, k + 1) for k in range(r.size) if r[k]]
+    print(len(out))
+    print(datetime.datetime.now()strftime("%Y-%m-%d %H:%M:%S"))
     if not out:
         return 0
     return np.mean(out)
@@ -80,15 +83,16 @@ def map(model_file, dic_file, test, i):
                     rel = 0
                 insert_query = "INSERT INTO similarity VALUES ({}, {}, {}, {})".format(docs[i], docs[j], sim, rel)
                 cur.execute(insert_query)
-                insert_query = "INSERT INTO similarity VALUES ({}, {}, {}, {})".format(docs[j], docs[i], sim, rel)
-                cur.execute(insert_query)
+                #insert_query = "INSERT INTO similarity VALUES ({}, {}, {}, {})".format(docs[j], docs[i], sim, rel)
+                #cur.execute(insert_query)
                 conn.commit()
             query = "SELECT rel FROM similarity WHERE id1 = {} ORDER BY cossim DESC".format(did)
             cur.execute(query)
             r = cur.fetchall()
-            rs.append(r)
-        
-        print(mean_average_precision(rs))
+            ap = average_precision(r)
+            rs.append(ap)
+
+        print(np.mean(rs))
     conn.close ()
 
 def main():
