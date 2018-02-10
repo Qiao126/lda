@@ -27,7 +27,7 @@ def average_precision(r):
     r = np.asarray(r) != 0
     out = [precision_at_k(r, k + 1) for k in range(r.size) if r[k]]
     print(len(out))
-    print(datetime.datetime.now()strftime("%Y-%m-%d %H:%M:%S"))
+    print(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
     if not out:
         return 0
     return np.mean(out)
