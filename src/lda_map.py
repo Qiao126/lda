@@ -10,7 +10,7 @@ import numpy as np
 import json
 import random
 import psycopg2
-
+import datetime
 
 SEED = 126
 
@@ -86,7 +86,7 @@ def map(model_file, dic_file, test, i):
                 insert_query = "INSERT INTO similarity VALUES ('{}', {}, {})".format(docs[j], sim, rel)
                 cur.execute(insert_query)
             conn.commit()
-            query = "SELECT rel FROM similarity ORDER BY cossim DESC; "
+            query = "SELECT rel FROM similarity ORDER BY cossim DESC LIMIT 100; "
             cur.execute(query)
             r = cur.fetchall()
             ap = average_precision(r)
