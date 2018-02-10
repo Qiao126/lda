@@ -39,6 +39,7 @@ def mean_average_precision(rs):
 def map(model_file, dic_file, test, i):
     conn = psycopg2.connect("host=localhost dbname=postgres user=postgres")
     cur = conn.cursor()
+    cur.execute("drop table similarity; ")
     cur.execute(
         """
         CREATE TABLE similarity(
@@ -81,7 +82,7 @@ def map(model_file, dic_file, test, i):
                     rel = 1
                 else:
                     rel = 0
-                insert_query = "INSERT INTO similarity VALUES ({}, {}, {}, {})".format(docs[i], docs[j], sim, rel)
+                insert_query = "INSERT INTO similarity VALUES ('{}', '{}', {}, {})".format(docs[i], docs[j], sim, rel)
                 cur.execute(insert_query)
                 #insert_query = "INSERT INTO similarity VALUES ({}, {}, {}, {})".format(docs[j], docs[i], sim, rel)
                 #cur.execute(insert_query)
