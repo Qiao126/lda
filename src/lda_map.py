@@ -39,7 +39,7 @@ def mean_average_precision(rs):
 def map(model_file, dic_file, test, i):
     conn = psycopg2.connect("host=localhost dbname=postgres user=postgres")
     cur = conn.cursor()
-    cur.execute("drop table similarity; ")
+    #cur.execute("drop table similarity; ")
     cur.execute(
         """
         CREATE TABLE similarity(
@@ -49,6 +49,7 @@ def map(model_file, dic_file, test, i):
             rel integer);
         """
     )
+    conn.commit()
     test_size = len(test.keys())
     dictionary = gensim.corpora.Dictionary().load(dic_file)
     #Knum = np.arange(10, 160, 10) # number of topics
@@ -86,7 +87,7 @@ def map(model_file, dic_file, test, i):
                 cur.execute(insert_query)
                 #insert_query = "INSERT INTO similarity VALUES ({}, {}, {}, {})".format(docs[j], docs[i], sim, rel)
                 #cur.execute(insert_query)
-                conn.commit()
+            conn.commit()
             query = "SELECT rel FROM similarity WHERE id1 = {} ORDER BY cossim DESC".format(did)
             cur.execute(query)
             r = cur.fetchall()
