@@ -41,7 +41,8 @@ def map(model_file, dic_file, test, i):
         CREATE TABLE similarity(
             id1 text PRIMARY KEY,
             id2 text,
-            cossim float)
+            cossim float,
+            rel integer);
         """
     )
     test_size = len(test.keys())
@@ -61,6 +62,7 @@ def map(model_file, dic_file, test, i):
             doc_topics[did] = topics
         docs = doc_topics.keys()
         #print(docs)
+        rs = []
         for (i, did) in enumerate(docs):
             #print("topic K: ", K, "doc:", i)
             if docs[i] not in sim_dist:
@@ -72,27 +74,20 @@ def map(model_file, dic_file, test, i):
                 sim = gensim.matutils.cossim(doc_topics[docs[i]], doc_topics[docs[j]]) #match topic-id separately in vec1, vec2 to calculate cosine
                 #sim_dist[docs[i]][docs[j]] = sim
                 #sim_dist[docs[j]][docs[i]] = sim #save twice
-                insert_query = "INSERT INTO similarity VALUES ({}, {}, {})".format(docs[i], docs[j], sim)
+                if test[docs[i]][0] == test[docs[j]][0]: #two docs have the same tag
+                    rel = 1
+                else:
+                    rel = 0
+                insert_query = "INSERT INTO similarity VALUES ({}, {}, {}, {})".format(docs[i], docs[j], sim, rel)
                 cur.execute(insert_query)
-                insert_query = "INSERT INTO similarity VALUES ({}, {}, {})".format(docs[j], docs[i], sim)
+                insert_query = "INSERT INTO similarity VALUES ({}, {}, {}, {})".format(docs[j], docs[i], sim, rel)
                 cur.execute(insert_query)
                 conn.commit()
-        rs = []
-        for (i, did) in enumerate(docs):
-            r = []
-            #print("doc", did, "-------------------------------------------")
-            #rank_dist = OrderedDict(sorted(sim_dist[did].items(), key=itemgetter(1), reverse=True))
-            query = "SELECT id2 FROM similarity WHERE id1 = {} ORDER BY cossim DESC".format(did)
+            query = "SELECT rel FROM similarity WHERE id1 = {} ORDER BY cossim DESC".format(did)
             cur.execute(query)
-            id2_list = cur.fetchall()
-            #for (key, value) in rank_dist.items():
-            for key in id2_list:
-                #print(key, value)
-                if test[did][0] == test[key][0]: #two docs have the same tag
-                    r.append(1)
-                else:
-                    r.append(0)
+            r = cur.fetchall()
             rs.append(r)
+        
         print(mean_average_precision(rs))
     conn.close ()
 
