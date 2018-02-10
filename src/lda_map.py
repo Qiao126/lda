@@ -43,11 +43,11 @@ def map(model_file, dic_file, test, i):
     cur.execute(
         """
         CREATE TABLE similarity(
-            id1 text PRIMARY KEY,
-            id2 text,
+            id text PRIMARY KEY,
             cossim float,
             rel integer);
         """
+
     )
     conn.commit()
     test_size = len(test.keys())
@@ -83,16 +83,15 @@ def map(model_file, dic_file, test, i):
                     rel = 1
                 else:
                     rel = 0
-                insert_query = "INSERT INTO similarity VALUES ('{}', '{}', {}, {})".format(docs[i], docs[j], sim, rel)
+                insert_query = "INSERT INTO similarity VALUES ('{}', {}, {})".format(docs[j], sim, rel)
                 cur.execute(insert_query)
-                #insert_query = "INSERT INTO similarity VALUES ({}, {}, {}, {})".format(docs[j], docs[i], sim, rel)
-                #cur.execute(insert_query)
             conn.commit()
-            query = "SELECT rel FROM similarity WHERE id1 = {} ORDER BY cossim DESC".format(did)
+            query = "SELECT rel FROM similarity ORDER BY cossim DESC; "
             cur.execute(query)
             r = cur.fetchall()
             ap = average_precision(r)
             rs.append(ap)
+            cur.execute("TRUNCATE similarity;")
 
         print(np.mean(rs))
     conn.close ()
