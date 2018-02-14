@@ -37,19 +37,18 @@ def mean_average_precision(rs):
     return np.mean([average_precision(r) for r in rs])
 
 def map(model_file, dic_file, test, i):
-    conn = psycopg2.connect("host=localhost dbname=postgres user=postgres")
-    cur = conn.cursor()
+    #conn = psycopg2.connect("host=localhost dbname=postgres user=postgres")
+    #cur = conn.cursor()
     #cur.execute("drop table similarity; ")
-    cur.execute(
-        """
-        CREATE TABLE similarity(
-            id text PRIMARY KEY,
-            cossim float,
-            rel integer);
-        """
-
-    )
-    conn.commit()
+    #cur.execute(
+    #    """
+    #    CREATE TABLE similarity(
+    #        id text PRIMARY KEY,
+    #        cossim float,
+    #        rel integer);
+    #    """
+    #)
+    #conn.commit()
     test_size = len(test.keys())
     dictionary = gensim.corpora.Dictionary().load(dic_file)
     #Knum = np.arange(10, 160, 10) # number of topics
@@ -62,39 +61,40 @@ def map(model_file, dic_file, test, i):
         lda = gensim.models.ldamodel.LdaModel.load(model_file + str(K) + '.' + str(i))
         for did, doc in test.items():
             topics = lda.get_document_topics(dictionary.doc2bow(doc[1]))  #list of (topic-id, prob)
-            #topics = sorted(topics, key=itemgetter(1), reverse=True) # order by desc prob
-            #topics = topics[:int(K/5)]  #get top topics
             doc_topics[did] = topics
         docs = doc_topics.keys()
-        #print(docs)
         rs = []
         for (i, did) in enumerate(docs):
-            #print("topic K: ", K, "doc:", i)
-            if docs[i] not in sim_dist:
-                sim_dist[docs[i]] = {}
-            max_sim = 0
-            for j in range(i+1, test_size):
-                if docs[j] not in sim_dist:
-                    sim_dist[docs[j]] = {}
+            print(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), "got new document")
+                sim_dist = {}
+            for j in range(test_size):
                 sim = gensim.matutils.cossim(doc_topics[docs[i]], doc_topics[docs[j]]) #match topic-id separately in vec1, vec2 to calculate cosine
-                #sim_dist[docs[i]][docs[j]] = sim
-                #sim_dist[docs[j]][docs[i]] = sim #save twice
                 if test[docs[i]][0] == test[docs[j]][0]: #two docs have the same tag
                     rel = 1
                 else:
                     rel = 0
-                insert_query = "INSERT INTO similarity VALUES ('{}', {}, {})".format(docs[j], sim, rel)
-                cur.execute(insert_query)
-            conn.commit()
-            query = "SELECT rel FROM similarity ORDER BY cossim DESC LIMIT 100; "
-            cur.execute(query)
-            r = cur.fetchall()
+                sim_dist[docs[j]] = (sim, rel)
+                #insert_query = "INSERT INTO similarity VALUES ('{}', {}, {})".format(docs[j], sim, rel)
+                #cur.execute(insert_query)
+            #conn.commit()
+
+            print(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), "got similarities")
+            rank_dist = OrderedDict(sorted(sim_dist.items(), key=itemgetter(0), reverse=True))
+            r = [ x[1] for x in rank_dist.values() ]
+            for (key, val) in rank_dist.items():
+                print(key, val)
+            #query = "SELECT rel FROM similarity ORDER BY cossim DESC LIMIT 100; "
+            #cur.execute(query)
+            #r = cur.fetchall()
+            print(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), "got relevance ranking")
             ap = average_precision(r)
+            print(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), "got ap")
             rs.append(ap)
-            cur.execute("TRUNCATE similarity;")
+            sim_dist.clear()
+            #cur.execute("TRUNCATE similarity;")
 
         print(np.mean(rs))
-    conn.close ()
+    #conn.close ()
 
 def main():
     """
@@ -143,8 +143,8 @@ def main():
     """
     with open(test_file3, 'r') as data_file:
         data  = json.load(data_file)
-        #test_size = data['test_size']
-        test_size = 1000
+        test_size = data['test_size']
+        #test_size = 1000
         test_doc_tag = data['test_doc_tag'][:test_size]
         test_doc_list = data['test_doc_list'][:test_size]
         test_doc_id = data['test_doc_id'][:test_size]
