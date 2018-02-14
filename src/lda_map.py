@@ -47,6 +47,16 @@ def average_precision(r):
 def mean_average_precision(rs):
     return np.mean([average_precision(r) for r in rs])
 
+simmap = {}
+def get_cossim(i, j, doc_topics, docs):
+    doc_v = str(min([i,j])) + str(max([i, j]))
+    if doc_v in simmap:
+        return simmap[doc_v]
+
+    sim = gensim.matutils.cossim(doc_topics[docs[i]], doc_topics[docs[j]]) #match topic-id separately in vec1, vec2 to calculate cosine
+    simmap[doc_v] = sim
+    return sim
+
 def map(model_file, dic_file, test, i):
     #conn = psycopg2.connect("host=localhost dbname=postgres user=postgres")
     #cur = conn.cursor()
@@ -78,7 +88,7 @@ def map(model_file, dic_file, test, i):
             print(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), "got new document")
             sim_dist = {}
             for j in range(test_size):
-                sim = gensim.matutils.cossim(doc_topics[docs[i]], doc_topics[docs[j]]) #match topic-id separately in vec1, vec2 to calculate cosine
+                sim = get_cossim(i, j, doc_topics, docs) #match topic-id separately in vec1, vec2 to calculate cosine
                 if test[docs[i]][0] == test[docs[j]][0]: #two docs have the same tag
                     rel = 1
                 else:
