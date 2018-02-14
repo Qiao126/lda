@@ -77,10 +77,8 @@ def map(model_file, dic_file, test, i):
             #conn.commit()
 
             print(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), "got similarities")
-            rank_dist = OrderedDict(sorted(sim_dist.items(), key=lambda x: x[1][0], reverse=True))
+            rank_dist = OrderedDict(sorted(sim_dist.items(), key=lambda x: x[1][0], reverse=True)[:100])
             r = [ x[1] for x in rank_dist.values() ]
-            for (key, val) in rank_dist.items():
-                print(key, val)
             #query = "SELECT rel FROM similarity ORDER BY cossim DESC LIMIT 100; "
             #cur.execute(query)
             #r = cur.fetchall()
