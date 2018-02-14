@@ -66,6 +66,7 @@ def map(model_file, dic_file, test, i):
     Knum = [100]
     for K in Knum:
         doc_topics = {}
+        print(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
         print("Load model: " + str(model_file) + str(K) + "---------------------------------------", i)
         lda = gensim.models.ldamodel.LdaModel.load(model_file + str(K) + '.' + str(i))
         for did, doc in test.items():
