@@ -54,9 +54,7 @@ def map(model_file, dic_file, test, i):
     #Knum = np.arange(10, 160, 10) # number of topics
     Knum = [100]
     for K in Knum:
-        rs = []
         doc_topics = {}
-        sim_dist = {}
         print("Load model: " + str(model_file) + str(K) + "---------------------------------------", i)
         lda = gensim.models.ldamodel.LdaModel.load(model_file + str(K) + '.' + str(i))
         for did, doc in test.items():
@@ -66,7 +64,7 @@ def map(model_file, dic_file, test, i):
         rs = []
         for (i, did) in enumerate(docs):
             print(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), "got new document")
-                sim_dist = {}
+            sim_dist = {}
             for j in range(test_size):
                 sim = gensim.matutils.cossim(doc_topics[docs[i]], doc_topics[docs[j]]) #match topic-id separately in vec1, vec2 to calculate cosine
                 if test[docs[i]][0] == test[docs[j]][0]: #two docs have the same tag
@@ -79,7 +77,7 @@ def map(model_file, dic_file, test, i):
             #conn.commit()
 
             print(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), "got similarities")
-            rank_dist = OrderedDict(sorted(sim_dist.items(), key=itemgetter(0), reverse=True))
+            rank_dist = OrderedDict(sorted(sim_dist.items(), key=lambda x: x[1][0], reverse=True))
             r = [ x[1] for x in rank_dist.values() ]
             for (key, val) in rank_dist.items():
                 print(key, val)
