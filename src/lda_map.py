@@ -26,7 +26,6 @@ def precision_at_k(r, k):
 def average_precision(r):
     r = np.asarray(r) != 0
     out = [precision_at_k(r, k + 1) for k in range(r.size) if r[k]]
-    print(len(out))
     print(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
     if not out:
         return 0
@@ -63,7 +62,7 @@ def map(model_file, dic_file, test, i):
         docs = doc_topics.keys()
         rs = []
         for (i, did) in enumerate(docs):
-            print(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), "got new document")
+            #print(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), "got new document")
             sim_dist = {}
             for j in range(test_size):
                 sim = gensim.matutils.cossim(doc_topics[docs[i]], doc_topics[docs[j]]) #match topic-id separately in vec1, vec2 to calculate cosine
@@ -76,15 +75,15 @@ def map(model_file, dic_file, test, i):
                 #cur.execute(insert_query)
             #conn.commit()
 
-            print(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), "got similarities")
+            #print(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), "got similarities")
             rank_dist = OrderedDict(sorted(sim_dist.items(), key=lambda x: x[1][0], reverse=True)[:100])
             r = [ x[1] for x in rank_dist.values() ]
             #query = "SELECT rel FROM similarity ORDER BY cossim DESC LIMIT 100; "
             #cur.execute(query)
             #r = cur.fetchall()
-            print(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), "got relevance ranking")
+            #print(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), "got relevance ranking")
             ap = average_precision(r)
-            print(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), "got ap")
+            #print(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), "got ap")
             rs.append(ap)
             sim_dist.clear()
             #cur.execute("TRUNCATE similarity;")
