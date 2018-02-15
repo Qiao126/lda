@@ -18,13 +18,6 @@ from numpy.linalg import norm
 SEED = 126
 
 
-def precision_at_k(r, k):
-    assert k >= 1
-    r = np.asarray(r)[:k] != 0
-    if r.size != k:
-        raise ValueError('Relevance score length < k')
-    return np.mean(r)
-
 def average_precision(r):
     r = np.asarray(r) != 0
     mean_arrays = []
@@ -38,14 +31,22 @@ def average_precision(r):
 
     return res / count
 
-'''
+"""
+def precision_at_k(r, k):
+    assert k >= 1
+    r = np.asarray(r)[:k] != 0
+    if r.size != k:
+        raise ValueError('Relevance score length < k')
+    return np.mean(r)
+
+
 def average_precision(r):
     r = np.asarray(r) != 0
     out = [precision_at_k(r, k + 1) for k in range(r.size) if r[k]]
     if not out:
         return 0
     return np.mean(out)
-'''
+"""
 
 def mean_average_precision(rs):
     return np.mean([average_precision(r) for r in rs])
@@ -59,7 +60,8 @@ def get_cossim(i, j, doc_topics, docs):
     #sim = gensim.matutils.cossim(doc_topics[docs[i]], doc_topics[docs[j]]) #match topic-id separately in vec1, vec2 to calculate cosine
     a = doc_topics[docs[i]]
     b = doc_topics[docs[j]]
-    sim = np.inner(a, b) / (norm(a) * norm(b))
+    #sim = np.dot(a, b) / (norm(a) * norm(b))
+    sim = cosine_similarity(a, b)
     simmap[doc_v] = sim
     return sim
 
