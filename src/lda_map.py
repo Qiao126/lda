@@ -57,15 +57,14 @@ def get_cossim(i, j, doc_topics, docs):
     if doc_v in simmap:
         return simmap[doc_v]
 
-    #sim = gensim.matutils.cossim(doc_topics[docs[i]], doc_topics[docs[j]]) #match topic-id separately in vec1, vec2 to calculate cosine
-    a = doc_topics[docs[i]]
-    b = doc_topics[docs[j]]
+    sim = gensim.matutils.cossim(doc_topics[docs[i]], doc_topics[docs[j]]) #match topic-id separately in vec1, vec2 to calculate cosine
+    #a = doc_topics[docs[i]]
+    #b = doc_topics[docs[j]]
     #sim = np.dot(a, b) / (norm(a) * norm(b))
-    a = a.reshape(1,-1)
-    b = b.reshape(1,-1)
-    sim = cosine_similarity(a, b)
+    #a = np.array(a).reshape(1,-1)
+    #b = np.array(b).reshape(1,-1)
+    #sim = cosine_similarity(a, b)
     simmap[doc_v] = sim[0][0]
-    print sim
     return sim
 
 def map(model_file, dic_file, test, i):
@@ -92,9 +91,9 @@ def map(model_file, dic_file, test, i):
         lda = gensim.models.ldamodel.LdaModel.load(model_file + str(K) + '.' + str(i))
         for did, doc in test.items():
             topics = lda.get_document_topics(dictionary.doc2bow(doc[1]))  #list of (topic-id, prob)
-            topics =[x[1] for x in sorted(topics, key=itemgetter(0))]
-            print(len(topics))
-            print(topics)
+            #topics =[x[1] for x in sorted(topics, key=itemgetter(0))]
+            #print(len(topics))
+            #print(topics)
             doc_topics[did] = topics
         docs = doc_topics.keys()
         rs = []
