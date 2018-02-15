@@ -11,6 +11,9 @@ import json
 import random
 import psycopg2
 import datetime
+from sklearn.metrics.pairwise import cosine_similarity
+from numpy import dot, inner
+from numpy.linalg import norm
 
 SEED = 126
 
@@ -53,7 +56,10 @@ def get_cossim(i, j, doc_topics, docs):
     if doc_v in simmap:
         return simmap[doc_v]
 
-    sim = gensim.matutils.cossim(doc_topics[docs[i]], doc_topics[docs[j]]) #match topic-id separately in vec1, vec2 to calculate cosine
+    #sim = gensim.matutils.cossim(doc_topics[docs[i]], doc_topics[docs[j]]) #match topic-id separately in vec1, vec2 to calculate cosine
+    a = doc_topics[docs[i]]
+    b = doc_topics[docs[j]]
+    sim = np.inner(a, b) / (norm(a) * norm(b))
     simmap[doc_v] = sim
     return sim
 
@@ -81,6 +87,7 @@ def map(model_file, dic_file, test, i):
         lda = gensim.models.ldamodel.LdaModel.load(model_file + str(K) + '.' + str(i))
         for did, doc in test.items():
             topics = lda.get_document_topics(dictionary.doc2bow(doc[1]))  #list of (topic-id, prob)
+            topics =[x[1] for x in sorted(topics, key=itemgetter(0))]
             doc_topics[did] = topics
         docs = doc_topics.keys()
         rs = []
