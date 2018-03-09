@@ -213,9 +213,10 @@ def train():
 def train_para(mm_corpus, dictionary, model_file):
     #Knum = np.arange(10, 160, 10) # number of topics
     Knum = [18]
-    i = 61
+    i = 67
     for K in Knum:
-        for a in [None, 'asymmetric', 'auto']:
+        #for a in [None, 'asymmetric', 'auto']:
+        for a in [100.0/K, 50.0/K, 20.0/K, 15.0/K, 10.0/K, 5.0/K]:
             for b in [None, 'auto']:
                 print ("Train: " + str(model_file) + str(K))
                 lda = gensim.models.ldamodel.LdaModel(corpus=mm_corpus, id2word=dictionary, num_topics=K, alpha=a, eta=b)
