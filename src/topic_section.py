@@ -3,6 +3,7 @@ from lda_model_train import test_file3
 import json
 from collections import Counter
 import matplotlib.pyplot as pyplot
+import gensim
 
 with open(test_file3, 'r') as data_file:
     data  = json.load(data_file)
@@ -11,11 +12,15 @@ with open(test_file3, 'r') as data_file:
     test_doc_list = data['test_doc_list'][:test_size]
     test_doc_id = data['test_doc_id'][:test_size]
 
-model_file = model_file2 + '18.66'
+K = 18
+i = 66
+model_file = model_file2 + str(K) + '.' + str(i)
 lda = gensim.models.ldamodel.LdaModel.load(model_file)
 
+dictionary2 = gensim.corpora.Dictionary().load('lda.ap2.dictionary')
+
 for doc, section in zip(test_doc_list, test_doc_tag):
-    topics = model.get_document_topics(dictionary.doc2bow(doc), minimum_probability=1.0/K)  # list of (topic-id, prob)
+    topics = lda.get_document_topics(dictionary2.doc2bow(doc), minimum_probability=1.0/K)  # list of (topic-id, prob)
     num_topics = len(topics)
     topics = sorted(topics, key=itemgetter(1), reverse=True) # order by desc prob
     for t in topics:
