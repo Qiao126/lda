@@ -42,7 +42,7 @@ model_file3 = 'lda.merged.model.pretrained.'
 dic_file3 = "lda.merged.dictionary"
 
 test_file3 = '../data/test_doc_list_apSection.json'
-
+test_file4 = '../data/test_doc_list_apSection2.json'
 SEED = 126
 
 #with open(test_file3, 'r') as data_file:
@@ -156,47 +156,45 @@ def train():
     with open(test_file3, 'r') as data_file:
         data  = json.load(data_file)
         test_size = data['test_size']
-        train_doc_list2 = data['test_doc_list'][test_size:]
-    """
-    random.seed(SEED)
-    random.shuffle(train_doc_list2)
-    fold = int(len(train_doc_list2)/20)
-    train_docs = []
-    for i in range(20):
-        train_docs.append(train_doc_list2[:fold])
-        train_doc_list2 = train_doc_list2[fold:]
-    """
-    """
-    for i in range(len(train_docs)):
-        print("fold ", i)
-        id2word_ap = gensim.corpora.Dictionary(train_docs[i])
-        id2word_ap.filter_extremes(no_below=20, no_above=0.1)
-        # id2word_ap = gensim.corpora.Dictionary().load(dic_file2)
-        print(id2word_ap)
-        #id2word_ap.save(dic_file2)
-        id2word_ap.save('lda.ap2.' + str(i) + '.dictionary')
-        """
-        """
-        # from dictionary to corpus
-        wiki_corpus = [id2word_wiki.doc2bow(tokens) for tokens in train_doc_list1]
-        gensim.corpora.MmCorpus.serialize(mcorpus_file1, wiki_corpus)
-        mm_corpus1 = gensim.corpora.MmCorpus(mcorpus_file1)
-        print(mm_corpus1)
-        """
-        """
-        mm_corpus2 = '../data/ap2_bow.' + str(i) +'.mm'
-        ap_corpus = [id2word_ap.doc2bow(tokens) for tokens in train_docs[i]]
-        gensim.corpora.MmCorpus.serialize(mm_corpus2, ap_corpus)
-        mm_corpus2 = gensim.corpora.MmCorpus(mm_corpus2)
-        print(mm_corpus2)
-    """
-    id2word_ap = gensim.corpora.Dictionary().load('lda.ap2' + '.dictionary')
+        test_doc_tag = data['test_doc_tag'][:test_size]
+        test_doc_section = data['test_doc_tag']
+        test_doc_list = data['test_doc_list']
+        test_doc_id = data['test_doc_id']
+
+    sections = OrderedDict(sorted(Counter(test_doc_tag).items()))
+    dids =[]
+    docs = []
+    secs = []
+    i = 0
+    for did, tokens, section in zip(test_doc_id, test_doc_list, test_doc_section):
+        if section != sections[3][0] and section != sections[15][0]:
+            dids.append(did)
+            docs.append(tokens)
+            secs.append(section)
+            i += 1
+
+    test_size = int(0.1 * i)
+
+    with open(test_file4, 'w') as outfile:
+        json.dump({"test_size": test_size,
+                    "test_doc_tag" : secs,
+                    "test_doc_list": docs,
+                    "test_doc_id" : dids}, outfile)
+
+    train_docs = docs[test_size:]
+    id2word_ap = gensim.corpora.Dictionary(train_docs)
+    id2word_ap.filter_extremes(no_below=20, no_above=0.1)
+    id2word_ap.save('lda.ap2.dictionary')
+
+    mm_corpus2 = '../data/ap2_bow.mm'
+    ap_corpus = [id2word_ap.doc2bow(tokens) for tokens in train_docs]
+    gensim.corpora.MmCorpus.serialize(mm_corpus2, ap_corpus)
+
+    id2word_ap = gensim.corpora.Dictionary().load('lda.ap2.dictionary')
     print(id2word_ap)
-    mm_corpus2 = '../data/ap2_bow' + '.mm'
-    mm_corpus2 = gensim.corpora.MmCorpus(mm_corpus2)
+    mm_corpus2 = gensim.corpora.MmCorpus('../data/ap2_bow.mm')
     print(mm_corpus2)
     # train the model
-    #train_para(mm_corpus1, id2word_wiki, model_file1)
     train_para(mm_corpus2, id2word_ap, model_file2)
     """
     # merged corpus
@@ -213,11 +211,11 @@ def train():
 def train_para(mm_corpus, dictionary, model_file):
     #Knum = np.arange(10, 160, 10) # number of topics
     Knum = [18]
-    i = 67
+    i = 79
     for K in Knum:
         #for a in [None, 'asymmetric', 'auto']:
-        for a in [100.0/K, 50.0/K, 20.0/K, 15.0/K, 10.0/K, 5.0/K]:
-            for b in [None, 'auto']:
+        for a in [100.0/K, 50.0/K, 20.0/K, 5.0/K, 1.0/K]:
+            for b in [0.1, 0.002]:
                 print ("Train: " + str(model_file) + str(K))
                 lda = gensim.models.ldamodel.LdaModel(corpus=mm_corpus, id2word=dictionary, num_topics=K, alpha=a, eta=b)
                 lda.save(model_file + str(K) + '.' + str(i))
