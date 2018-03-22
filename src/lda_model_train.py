@@ -103,55 +103,10 @@ def iter_ap(dump_dir, mode, vol):  # train on several files, different when eval
 
 def train():
     logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
-
-    # build dictionary: preprocesing on wiki
-    # remove articles that are too short(<20 words) and metadata
-    #with open("vocalbulary.txt", 'r') as data_file:
-    #    vol  = json.load(data_file)['vocalbulary']
     vol = None
-    """
-    doc_list = list(tokens for _, tokens in iter_wiki(train_file1, vol))
-    num_doc = len(doc_list)
-    print(num_doc)
-    num_train = int(num_doc * 0.8)
-    random.seed(SEED)
-    random.shuffle(doc_list)
-    train_doc_list1 = doc_list[: num_train]
-    with open(train_wiki_file, 'w') as outfile:
-        json.dump({"train_doc_list" : train_doc_list1}, outfile)
-    id2word_wiki = gensim.corpora.Dictionary(train_doc_list1)
-    with open(test_file1, 'w') as outfile:
-        json.dump({"test_doc_list" : doc_list[num_train:]}, outfile)
-    id2word_wiki = gensim.corpora.Dictionary(train_doc_list1)
-    # remove words occurs in <20 articles and >10% articles, keep 100,000 most frequent words
-    id2word_wiki.filter_extremes(no_below=20, no_above=0.1)  # keep_n=100000, keep only the first keep_n most frequent tokens (or keep all if None).
-    print (id2word_wiki)
-    id2word_wiki.save(dic_file1)
 
-    with open("wiki-vocalbulary.txt", 'w') as outfile:
-        json.dump({"vocalbulary" : id2word_wiki.values()}, outfile)
-
-    id2word_wiki = gensim.corpora.Dictionary().load(dic_file1)
-    with open(train_wiki_file, 'r') as data_file:
-        train_doc_list1  = json.load(data_file)['train_doc_list']
-
-
-    with open("wiki-vocalbulary.txt", 'r') as data_file:
-        vol  = json.load(data_file)['vocalbulary']
-    """
     # build dictionary: prepocessing on aftenposten
-    """
-    doc_list = list(tokens for _, _, tokens in iter_ap(dump_dir2, "train", vol))
-    num_doc = len(doc_list)
-    print(num_doc)
-    num_train = int(num_doc * 0.8)
-    random.seed(SEED)
-    random.shuffle(doc_list)
-    train_doc_list2 = doc_list[: num_train]
-    with open(train_ap_file, 'w') as outfile:
-        json.dump({"train_doc_list" : train_doc_list2}, outfile)
-    with open(test_file2, 'w') as outfile:
-        json.dump({"test_doc_list" : doc_list[num_train:]}, outfile)
+
     """
     with open(test_file3, 'r') as data_file:
         data  = json.load(data_file)
@@ -180,8 +135,39 @@ def train():
                     "test_doc_tag" : secs,
                     "test_doc_list": docs,
                     "test_doc_id" : dids}, outfile)
+    """
+    test = {}
+    ids = []
+    tags = []
+    test_doc_list = []
+    i = 0
+    for did, tag, tokens in iter_ap(dump_dir2, "test", vol):
+        if tag != 'unknown': #tag:
+            ids.append(did)
+            tags.append(tag)#(tag[0])
+            test_doc_list.append(list(tokens))
+            idstr = str(did)
+            print(idstr, tag)#tag[0])
+            test[idstr] = (tag, list(tokens))#(tag[0], list(tokens))
+        i += 1
+    print("#docs: ", i)
+    print(len(ids), len(tags), len(test_doc_list))
+    print(Counter(tags))
+    random.seed(SEED)
+    random.shuffle(ids)
+    random.seed(SEED)
+    random.shuffle(tags)
+    random.seed(SEED)
+    random.shuffle(test_doc_list)
+    test_size = len(ids) / 10
+    print("test_size:", test_size)
+    with open(test_file3, 'w') as outfile:
+        json.dump({"test_size": test_size,
+                    "test_doc_tag" : tags,
+                    "test_doc_list": test_doc_list,
+                    "test_doc_id" : ids}, outfile)
 
-    train_docs = docs[test_size:]
+    train_docs = test_doc_list[test_size:]
     id2word_ap = gensim.corpora.Dictionary(train_docs)
     id2word_ap.filter_extremes(no_below=20, no_above=0.1)
     id2word_ap.save('lda.ap2.dictionary')
@@ -196,18 +182,7 @@ def train():
     print(mm_corpus2)
     # train the model
     train_para(mm_corpus2, id2word_ap, model_file2)
-    """
-    # merged corpus
-    dict2_to_dict1 = id2word_wiki.merge_with(id2word_ap)
-    merged_corpus = itertools.chain(mm_corpus1, dict2_to_dict1[mm_corpus2])
-    id2word_wiki.save(dic_file3)
-    print(id2word_wiki)
-    gensim.corpora.MmCorpus.serialize(mcorpus_file3, merged_corpus)
-    mm_corpus3 = gensim.corpora.MmCorpus(mcorpus_file3)
-    print(mm_corpus3)
-
-    train_para(mm_corpus3, id2word_wiki, model_file3)
-    """
+    
 def train_para(mm_corpus, dictionary, model_file):
     #Knum = np.arange(10, 160, 10) # number of topics
     Knum = [18]

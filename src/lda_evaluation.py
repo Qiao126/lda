@@ -116,7 +116,7 @@ def within_doc_rank(dictionary, model, K, corpus_docs):
         if t not in top_hash:
             representitive =  0;
         else:
-            print(top_hash[t], topic_doc[t])
+            #print(top_hash[t], topic_doc[t])
             representitive = float(top_hash[t]) / topic_doc[t]   # no smoothing
 
         scores.append(representitive)
@@ -210,20 +210,11 @@ if __name__ == '__main__':
 
     logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
 
-    #with open(train_wiki_file, 'r') as data_file:
-    #    wiki_docs  = json.load(data_file)['train_doc_list']
-
-    #with open(train_ap_file, 'r') as data_file:
-    #    ap_docs  = json.load(data_file)['train_doc_list']
     with open(test_file3, 'r') as data_file:
         data  = json.load(data_file)
         test_size = data['test_size']
-        #ap train docs
         train_doc_list2 = data['test_doc_list'][test_size:]
-        # test on the same 10% aftenposten tagged docs as in MAP
-        #test_size = 1000
         test_docs3 = data['test_doc_list'][:test_size]
-    #merged_docs = wiki_docs + ap_docs
     """
     random.seed(SEED)
     random.shuffle(train_doc_list2)
@@ -233,52 +224,24 @@ if __name__ == '__main__':
         train_docs.append(train_doc_list2[:fold])
         train_doc_list2 = train_doc_list2[fold:]
     """
-    #for i in range(20): #20 subsets
-    ap_docs = train_doc_list2 #train_docs[i]
-    #dictionary1 = gensim.corpora.Dictionary().load(dic_file1)
+    ap_docs = train_doc_list2
     dictionary2 = gensim.corpora.Dictionary().load('lda.ap2.dictionary')
-    #dictionary3 = gensim.corpora.Dictionary().load(dic_file3)
 
-    corpus_dist1 = {}
     corpus_dist2 = {}
-    corpus_dist3 = {}
-    #mm_corpus1 = gensim.corpora.MmCorpus(mcorpus_file1)
     mm_corpus2 = gensim.corpora.MmCorpus('../data/ap2_bow.mm')
-    #mm_corpus3 = gensim.corpora.MmCorpus(mcorpus_file3)
-    #print(mm_corpus1)
+
     print(mm_corpus2)
-    #print(mm_corpus3)
-    """
-    for doc in mm_corpus1:
-        for (wid, freq) in doc:
-            if wid in corpus_dist1:
-                corpus_dist1[wid] += freq
-            else:
-                corpus_dist1[wid] = freq
-    """
+
     for doc in mm_corpus2:
         for (wid, freq) in doc:
              if wid in corpus_dist2:
                 corpus_dist2[wid] += freq
              else:
                 corpus_dist2[wid] = freq
-    """
-    for doc in mm_corpus3:
-        for (wid, freq) in doc:
-             if wid in corpus_dist3:
-                corpus_dist3[wid] += freq
-             else:
-                corpus_dist3[wid] = freq
-    """
-    #print(len(corpus_dist1.keys()), np.sum(corpus_dist1.values()))
+
     print(len(corpus_dist2.keys()), np.sum(corpus_dist2.values()))
-    #print(len(corpus_dist3.keys()), np.sum(corpus_dist3.values()))
 
     """
-    # evaluate on 1k wiki documents **not** used in LDA training(wiki)
-    with open(test_file1, 'r') as data_file:
-        test_docs_list  = json.load(data_file)['test_doc_list']
-    test_docs1 = test_docs_list  # test on random 1/5 20170501-wiki docs
 
     # evaluate on 1k aftenposten documents **not** used in LDA training(wiki)
     with open(test_file2, 'r') as data_file:
@@ -286,9 +249,5 @@ if __name__ == '__main__':
     test_docs2 = test_docs_list  # test on 1/5 aftenposten docs
     """
 
-    #eval(dictionary1, mm_corpus1, corpus_dist1, wiki_docs, model_file1, test_docs3)  #wiki->wiki(train corpus)
-    #eval(dictionary1, mm_corpus2, corpus_dist2, ap_docs, model_file1, test_docs3)  #wiki->ap(test corpus)
     for i in range(61, 67):
         eval(dictionary2, mm_corpus2, corpus_dist2, ap_docs, model_file2, test_docs3, i)  #ap->ap(train/test corpus)
-    #eval(dictionary3, mm_corpus3, corpus_dist3, merged_docs, model_file3, test_docs3)  #merged->merged(train corpus)
-    #eval(dictionary3, mm_corpus2, corpus_dist2, ap_docs, model_file3, test_docs3)  #merged->ap(test corpus)
